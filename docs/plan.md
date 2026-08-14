@@ -1,7 +1,7 @@
 # Michi Binder Studio — Implementation Plan (M1–M5)
 
-**Status:** Awaiting Jacob's approval · **Executor:** GPT 5.6 Sol (Cursor), one task at a time,
-in order, from `docs/agent-runbook.md` (generated after approval).
+**Status:** Approved Aug 14, 2026 · **Executor:** unattended Cloud Agents (see
+`docs/unattended-cloud-prompt.md`); tasks still run in order from `docs/agent-runbook.md`.
 **Governing docs:** `PRD.md` v1.2 → `architecture.md` → `data-model.md` → `decisions.md`.
 
 **Rules for the executor:**
