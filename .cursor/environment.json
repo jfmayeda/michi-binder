@@ -1,0 +1,4 @@
+{
+  "name": "Michi Binder Studio",
+  "install": "node -v && npm -v"
+}
