@@ -304,6 +304,17 @@ export function placementAt(binder: Binder, pageId: string, row: number, col: nu
   return binder.placements.find((p) => p.pageId === pageId && p.row === row && p.col === col);
 }
 
+export function slotSize(
+  binder: Binder,
+  pageId: string,
+  row: number,
+  col: number,
+): { colSpan: number; rowSpan: number; mergeId: string | null } {
+  const merge = cellMerge(binder, pageId, row, col);
+  if (merge) return { colSpan: merge.colSpan, rowSpan: merge.rowSpan, mergeId: merge.id };
+  return { colSpan: 1, rowSpan: 1, mergeId: null };
+}
+
 export function upsertPlacement(binder: Binder, placement: Placement): Binder {
   const without = binder.placements.filter((p) => p.id !== placement.id);
   return { ...binder, placements: [...without, placement] };

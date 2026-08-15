@@ -18,6 +18,7 @@ export {
   placementFromUpload,
   removePlacement,
   placementAt,
+  slotSize,
 } from './slots';
-export { computeSplit, assemblyAnnotation } from './split';
+export { coverCrop, slotAspect, cropPixelAspect, clampCrop, panCrop, zoomCrop, cropBoxAspect } from './crop';
 export { serializeBinder, deserializeBinder } from './serialize';

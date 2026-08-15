@@ -24,6 +24,7 @@ import {
   placementFromUpload,
   proposalFromSelection,
   removePlacement,
+  slotSize,
   switchPageMode,
   unmerge,
 } from '@/domain/slots';
@@ -31,13 +32,14 @@ import { LAYOUTS } from '@/domain/layouts';
 import type { CardHit } from '@/search';
 import '@/components/binder/binder.css';
 import { SlotGrid } from '@/components/editor/SlotGrid';
+import { CropEditor } from '@/components/editor/CropEditor';
 import { useConfirmWithUndo } from '@/components/editor/ConfirmWithUndoToast';
 import {
   persistRenderMode,
   readStoredRenderMode,
   type RenderMode,
 } from '@/components/binder/renderMode';
-import type { Binder, Merge, Page, Placement } from '@/domain/types';
+import type { Binder, Merge, Page, Placement, Transform } from '@/domain/types';
 import { useStudioStore } from '@/state/studioStore';
 
 function resequence(pages: Page[]): Page[] {
@@ -81,7 +83,7 @@ function cellsFromSelected(selected: Set<string>) {
 export function Studio() {
   const { binderId } = useParams<{ binderId: string }>();
   const router = useRouter();
-  const { binders, loaded, refresh, save } = useStudioStore();
+  const { binders, loaded, refresh, save, media } = useStudioStore();
   const binder = binders.find((b) => b.id === binderId);
   const [spread, setSpread] = useState(0);
   const [pageIndex, setPageIndex] = useState(0);
@@ -89,6 +91,16 @@ export function Studio() {
   const [pending, setPending] = useState<Pending | null>(null);
   const [mode, setMode] = useState<RenderMode>('2d');
   const [mergeHint, setMergeHint] = useState<string | null>(null);
+  const [crop, setCrop] = useState<{
+    pageId: string;
+    row: number;
+    col: number;
+    asset: MediaBlob;
+    colSpan: number;
+    rowSpan: number;
+    draft: Placement;
+    imageUrl: string;
+  } | null>(null);
   const marqueeStart = useRef<{ pageId: string; row: number; col: number } | null>(null);
   const lastAnchor = useRef<{ pageId: string; row: number; col: number } | null>(null);
   const marqueeMoved = useRef(false);
@@ -263,6 +275,21 @@ export function Studio() {
     });
   };
 
+  const openCrop = (pageId: string, row: number, col: number, draft: Placement, asset: MediaBlob) => {
+    const size = slotSize(binder, pageId, row, col);
+    setCrop({
+      pageId,
+      row,
+      col,
+      asset,
+      colSpan: size.colSpan,
+      rowSpan: size.rowSpan,
+      draft,
+      imageUrl: URL.createObjectURL(new Blob([asset.bytes], { type: asset.mime })),
+    });
+    setPending(null);
+  };
+
   const incomingFromPending = (): Placement | null => {
     if (!pending) return null;
     if (pending.source === 'search') {
@@ -275,6 +302,16 @@ export function Studio() {
   };
 
   const placeAt = (pageId: string, row: number, col: number, incoming: Placement) => {
+    if (incoming.kind === 'art') {
+      const asset =
+        incoming.assetKind === 'upload' && incoming.uploadAssetId
+          ? media.find((m) => m.id === incoming.uploadAssetId)
+          : undefined;
+      if (asset) {
+        openCrop(pageId, row, col, incoming, asset);
+        return;
+      }
+    }
     persist(placeIntoCell(binder, pageId, row, col, incoming));
     setPending(null);
   };
@@ -287,6 +324,13 @@ export function Studio() {
     }
     if (marqueeMoved.current) return;
     const existing = placementAt(binder, page.id, row, col);
+    if (existing?.kind === 'art' && existing.uploadAssetId) {
+      const asset = media.find((m) => m.id === existing.uploadAssetId);
+      if (asset) {
+        openCrop(page.id, row, col, existing, asset);
+        return;
+      }
+    }
     if (existing) setPending({ source: 'slot', placement: existing });
   };
 
@@ -573,6 +617,30 @@ export function Studio() {
             </button>
           </section>
         </div>
+        {crop ? (
+          <CropEditor
+            imageUrl={crop.imageUrl}
+            widthPx={crop.asset.widthPx}
+            heightPx={crop.asset.heightPx}
+            colSpan={crop.colSpan}
+            rowSpan={crop.rowSpan}
+            initial={'version' in crop.draft.transform ? (crop.draft.transform as Transform) : undefined}
+            onSave={(transform) => {
+              persist(
+                placeIntoCell(binder, crop.pageId, crop.row, crop.col, {
+                  ...crop.draft,
+                  transform,
+                }),
+              );
+              URL.revokeObjectURL(crop.imageUrl);
+              setCrop(null);
+            }}
+            onCancel={() => {
+              URL.revokeObjectURL(crop.imageUrl);
+              setCrop(null);
+            }}
+          />
+        ) : null}
         {host}
       </main>
     </DndContext>
