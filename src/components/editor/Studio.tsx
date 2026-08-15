@@ -22,6 +22,7 @@ import {
   placementAt,
   placementFromCard,
   placementFromUpload,
+  placementFromPack,
   proposalFromSelection,
   removePlacement,
   slotSize,
@@ -62,7 +63,8 @@ function parseCellId(id: string): { pageId: string; row: number; col: number } |
 type Pending =
   | { source: 'search'; card: CardHit }
   | { source: 'slot'; placement: Placement }
-  | { source: 'art'; asset: MediaBlob };
+  | { source: 'art'; asset: MediaBlob }
+  | { source: 'pack'; item: { id: string; file: string; title: string } };
 
 const MERGE_ERRORS: Record<string, string> = {
   '1x1': 'Need at least two pockets to merge.',
@@ -98,11 +100,13 @@ export function Studio() {
     pageId: string;
     row: number;
     col: number;
-    asset: MediaBlob;
+    widthPx: number;
+    heightPx: number;
     colSpan: number;
     rowSpan: number;
     draft: Placement;
     imageUrl: string;
+    revoke?: boolean;
   } | null>(null);
   const marqueeStart = useRef<{ pageId: string; row: number; col: number } | null>(null);
   const lastAnchor = useRef<{ pageId: string; row: number; col: number } | null>(null);
@@ -278,17 +282,28 @@ export function Studio() {
     });
   };
 
-  const openCrop = (pageId: string, row: number, col: number, draft: Placement, asset: MediaBlob) => {
+  const openCrop = (
+    pageId: string,
+    row: number,
+    col: number,
+    draft: Placement,
+    imageUrl: string,
+    widthPx: number,
+    heightPx: number,
+    revoke = false,
+  ) => {
     const size = slotSize(binder, pageId, row, col);
     setCrop({
       pageId,
       row,
       col,
-      asset,
+      widthPx,
+      heightPx,
       colSpan: size.colSpan,
       rowSpan: size.rowSpan,
       draft,
-      imageUrl: URL.createObjectURL(new Blob([asset.bytes], { type: asset.mime })),
+      imageUrl,
+      revoke,
     });
     setPending(null);
   };
@@ -301,19 +316,32 @@ export function Studio() {
     if (pending.source === 'art') {
       return placementFromUpload(crypto.randomUUID(), pending.asset.id);
     }
+    if (pending.source === 'pack') {
+      return placementFromPack(crypto.randomUUID(), pending.item.id);
+    }
     return pending.placement;
   };
 
   const placeAt = (pageId: string, row: number, col: number, incoming: Placement) => {
-    if (incoming.kind === 'art') {
-      const asset =
-        incoming.assetKind === 'upload' && incoming.uploadAssetId
-          ? media.find((m) => m.id === incoming.uploadAssetId)
-          : undefined;
+    if (incoming.kind === 'art' && incoming.assetKind === 'upload' && incoming.uploadAssetId) {
+      const asset = media.find((m) => m.id === incoming.uploadAssetId);
       if (asset) {
-        openCrop(pageId, row, col, incoming, asset);
+        openCrop(
+          pageId,
+          row,
+          col,
+          incoming,
+          URL.createObjectURL(new Blob([asset.bytes], { type: asset.mime })),
+          asset.widthPx,
+          asset.heightPx,
+          true,
+        );
         return;
       }
+    }
+    if (incoming.kind === 'art' && incoming.assetKind === 'pack' && incoming.packItemId && pending?.source === 'pack') {
+      openCrop(pageId, row, col, incoming, pending.item.file, 800, 1086);
+      return;
     }
     persist(placeIntoCell(binder, pageId, row, col, incoming));
     setPending(null);
@@ -330,9 +358,22 @@ export function Studio() {
     if (existing?.kind === 'art' && existing.uploadAssetId) {
       const asset = media.find((m) => m.id === existing.uploadAssetId);
       if (asset) {
-        openCrop(page.id, row, col, existing, asset);
+        openCrop(
+          page.id,
+          row,
+          col,
+          existing,
+          URL.createObjectURL(new Blob([asset.bytes], { type: asset.mime })),
+          asset.widthPx,
+          asset.heightPx,
+          true,
+        );
         return;
       }
+    }
+    if (existing?.kind === 'art' && existing.packItemId) {
+      openCrop(page.id, row, col, existing, `/art-packs/${existing.packItemId}.svg`, 800, 1086);
+      return;
     }
     if (existing) setPending({ source: 'slot', placement: existing });
   };
@@ -398,6 +439,8 @@ export function Studio() {
       ? pending.card.name
       : pending?.source === 'art'
         ? pending.asset.fileName
+        : pending?.source === 'pack'
+          ? pending.item.title
         : pending?.source === 'slot'
           ? pending.placement.cardId ?? 'that pocket'
           : null;
@@ -420,7 +463,10 @@ export function Studio() {
           )}
           <div className="min-h-0 flex-1 overflow-y-auto">
             <SearchPanel wrapDnd={false} compact onSelectCard={(card) => setPending({ source: 'search', card })} />
-            <MediaLibrary onSelect={(asset) => setPending({ source: 'art', asset })} />
+            <MediaLibrary
+              onSelect={(asset) => setPending({ source: 'art', asset })}
+              onSelectPack={(item) => setPending({ source: 'pack', item })}
+            />
           </div>
         </aside>
 
@@ -671,8 +717,8 @@ export function Studio() {
         {crop ? (
           <CropEditor
             imageUrl={crop.imageUrl}
-            widthPx={crop.asset.widthPx}
-            heightPx={crop.asset.heightPx}
+            widthPx={crop.widthPx}
+            heightPx={crop.heightPx}
             colSpan={crop.colSpan}
             rowSpan={crop.rowSpan}
             initial={'version' in crop.draft.transform ? (crop.draft.transform as Transform) : undefined}
@@ -683,11 +729,11 @@ export function Studio() {
                   transform,
                 }),
               );
-              URL.revokeObjectURL(crop.imageUrl);
+              if (crop.revoke) URL.revokeObjectURL(crop.imageUrl);
               setCrop(null);
             }}
             onCancel={() => {
-              URL.revokeObjectURL(crop.imageUrl);
+              if (crop.revoke) URL.revokeObjectURL(crop.imageUrl);
               setCrop(null);
             }}
           />

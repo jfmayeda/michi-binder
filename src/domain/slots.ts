@@ -350,6 +350,23 @@ export function placementFromCard(id: string, cardId: string): Placement {
   };
 }
 
+export function placementFromPack(id: string, packItemId: string): Placement {
+  return {
+    id,
+    pageId: '',
+    mergeId: null,
+    row: null,
+    col: null,
+    kind: 'art',
+    cardId: null,
+    assetKind: 'pack',
+    uploadAssetId: null,
+    packItemId,
+    transform: {},
+    ownership: null,
+  };
+}
+
 export function placementFromUpload(id: string, uploadAssetId: string): Placement {
   return {
     id,

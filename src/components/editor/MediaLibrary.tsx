@@ -14,16 +14,25 @@ function previewUrl(blob: MediaBlob) {
 
 export function MediaLibrary({
   onSelect,
+  onSelectPack,
 }: {
   onSelect?: (asset: MediaBlob) => void;
+  onSelectPack?: (item: { id: string; file: string; title: string }) => void;
 }) {
   const { media, refreshMedia, importMedia, removeMedia, restoreMedia } = useStudioStore();
   const { ask, host } = useConfirmWithUndo<MediaBlob>();
   const [error, setError] = useState<string | null>(null);
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const [packs, setPacks] = useState<
+    { id: string; title: string; items: { id: string; file: string; title: string }[] }[]
+  >([]);
 
   useEffect(() => {
     void refreshMedia();
+    void fetch('/art-packs/manifest.json')
+      .then((r) => r.json())
+      .then((data: { packs: typeof packs }) => setPacks(data.packs))
+      .catch(() => undefined);
   }, [refreshMedia]);
 
   useEffect(() => {
@@ -108,6 +117,26 @@ export function MediaLibrary({
           </li>
         ))}
       </ul>
+      {packs.map((pack) => (
+        <div key={pack.id}>
+          <p className="font-display text-xs text-ink">{pack.title}</p>
+          <ul className="mt-1 grid grid-cols-2 gap-2">
+            {pack.items.map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  className="w-full overflow-hidden rounded-md border border-rule bg-paper-sun shadow-stamp"
+                  onClick={() => onSelectPack?.(item)}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={item.file} alt="" className="aspect-square w-full object-cover" />
+                  <span className="block truncate px-1 py-0.5 text-[0.65rem] text-ink-soft">{item.title}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
       {host}
     </section>
   );

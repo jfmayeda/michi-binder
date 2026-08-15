@@ -16,6 +16,7 @@ export {
   placeIntoCell,
   placementFromCard,
   placementFromUpload,
+  placementFromPack,
   removePlacement,
   placementAt,
   slotSize,
