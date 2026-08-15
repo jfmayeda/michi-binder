@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { slotCount } from './index';
+import { slotCount } from './sample';
 
 describe('domain sample', () => {
   it('counts slots on a 3x3 page', () => {
