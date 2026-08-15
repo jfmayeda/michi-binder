@@ -1,0 +1,332 @@
+@property --flip {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+.binder-desk {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem 1rem 3rem;
+  background-color: var(--color-paper-deep);
+  background-image: var(--texture-linen), var(--texture-paper);
+}
+
+.binder-hint {
+  max-width: 40rem;
+  text-align: center;
+  color: var(--color-ink-soft);
+  font-size: 0.95rem;
+}
+
+.binder-stage {
+  perspective: 2200px;
+  perspective-origin: 50% 48%;
+}
+
+.binder-book {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 18px 1fr;
+  width: min(92vw, 1080px);
+  aspect-ratio: 2.05 / 1;
+  transform-style: preserve-3d;
+  overflow: visible;
+  filter: drop-shadow(0 18px 28px rgb(58 42 28 / 0.28));
+}
+
+.binder-spine {
+  position: relative;
+  z-index: 4;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(58 42 28 / 0.18),
+      rgb(255 248 230 / 0.12) 40%,
+      rgb(58 42 28 / 0.22)
+    ),
+    var(--color-paper-deep);
+  background-blend-mode: multiply, normal;
+  box-shadow:
+    inset 2px 0 4px rgb(58 42 28 / 0.18),
+    inset -2px 0 4px rgb(58 42 28 / 0.18);
+}
+
+.binder-rings {
+  position: absolute;
+  inset: 12% 3px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.binder-rings span {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--color-paper-sun), var(--color-paper-deep));
+  box-shadow: 0 1px 2px rgb(58 42 28 / 0.35);
+}
+
+.binder-leaf-slot {
+  position: relative;
+  transform-style: preserve-3d;
+  overflow: visible;
+  z-index: 2;
+}
+
+.binder-leaf-slot:has(.binder-flipper.is-animated),
+.binder-leaf-slot:has(.binder-flipper.is-dragging) {
+  z-index: 8;
+}
+
+.binder-static {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--color-paper-sun);
+}
+
+.binder-static.left {
+  border-radius: 8px 2px 2px 8px;
+  box-shadow: var(--shadow-inset-page), 4px 0 12px rgb(58 42 28 / 0.08);
+}
+
+.binder-static.right {
+  border-radius: 2px 8px 8px 2px;
+  box-shadow: var(--shadow-inset-page), -4px 0 12px rgb(58 42 28 / 0.08);
+}
+
+.binder-flipper {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  transform: rotateY(calc(var(--flip) * -1deg));
+  z-index: 5;
+}
+
+.binder-flipper.is-animated {
+  transition: transform var(--duration-flip) var(--ease-paper-flip);
+}
+
+.binder-flipper.is-dragging {
+  transition: none;
+}
+
+.binder-flipper.is-back {
+  transform-origin: right center;
+  transform: rotateY(calc(var(--flip) * 1deg));
+}
+
+.binder-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  overflow: hidden;
+}
+
+.binder-face-front {
+  transform: rotateY(0deg) translateZ(0.5px);
+  border-radius: 2px 8px 8px 2px;
+}
+
+.binder-face-back {
+  transform: rotateY(180deg) translateZ(0.5px);
+  border-radius: 8px 2px 2px 8px;
+}
+
+.binder-flipper.is-back .binder-face-front {
+  border-radius: 8px 2px 2px 8px;
+}
+
+.binder-flipper.is-back .binder-face-back {
+  border-radius: 2px 8px 8px 2px;
+}
+
+/* 2.5D paper-bend: gutter shade + outer sheen, opacity follows the flip. */
+.binder-face::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgb(58 42 28 / 0.18) 0%,
+    rgb(58 42 28 / 0.04) 10%,
+    transparent 28%,
+    rgb(255 250 238 / 0.14) 78%,
+    rgb(255 250 238 / 0.28) 100%
+  );
+  opacity: 0.85;
+}
+
+.binder-face-back::after {
+  background: linear-gradient(
+    270deg,
+    rgb(58 42 28 / 0.18) 0%,
+    rgb(58 42 28 / 0.04) 10%,
+    transparent 28%,
+    rgb(255 250 238 / 0.14) 78%,
+    rgb(255 250 238 / 0.28) 100%
+  );
+}
+
+.binder-curl {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  mix-blend-mode: multiply;
+  background: linear-gradient(
+    90deg,
+    rgb(58 42 28 / calc(0.02 + var(--flip) * 0.0022)) 0%,
+    transparent 42%,
+    rgb(58 42 28 / calc(var(--flip) * 0.0012)) 100%
+  );
+}
+
+.binder-shadow {
+  position: absolute;
+  inset: 8% -6% 8% 40%;
+  pointer-events: none;
+  z-index: 3;
+  border-radius: 40%;
+  background: rgb(58 42 28 / calc(var(--flip) * 0.0018));
+  filter: blur(18px);
+  transform: translateX(calc(var(--flip) * -0.8px)) scaleY(0.92);
+  opacity: calc(var(--flip) / 180);
+}
+
+.binder-page {
+  height: 100%;
+  padding: 1.1rem 1.2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.binder-page.wash-sun {
+  background-color: var(--color-paper-sun);
+}
+.binder-page.wash-paper {
+  background-color: var(--color-paper);
+}
+.binder-page.wash-shade {
+  background-color: var(--color-paper-shade);
+}
+.binder-page.wash-deep {
+  background-color: var(--color-paper-deep);
+}
+.binder-page.wash-cover {
+  background:
+    linear-gradient(180deg, rgb(196 92 62 / 0.12), transparent 42%),
+    var(--color-paper-deep);
+  background-image: var(--texture-linen),
+    linear-gradient(180deg, rgb(196 92 62 / 0.12), transparent 42%);
+}
+
+.binder-page-kicker {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.binder-page-title {
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  color: var(--color-ink);
+  line-height: 1.15;
+}
+
+.binder-page-note {
+  color: var(--color-ink-soft);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.binder-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 0.4rem;
+  min-height: 0;
+}
+
+.binder-slot {
+  border-radius: 0.28rem;
+  background: rgb(255 250 238 / 0.55);
+  box-shadow:
+    inset 0 0 0 1px rgb(58 42 28 / 0.08),
+    var(--shadow-stamp);
+}
+
+.binder-slot.filled {
+  background: linear-gradient(160deg, var(--color-accent-soft), var(--color-paper-shade));
+}
+
+.binder-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--color-ink-soft);
+  font-size: 0.9rem;
+}
+
+.binder-controls button {
+  font-family: var(--font-display);
+  background: var(--color-paper-sun);
+  color: var(--color-ink);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.9rem;
+  box-shadow: var(--shadow-stamp);
+  cursor: pointer;
+  transition:
+    background var(--duration-soft) var(--ease-paper),
+    transform var(--duration-quick) var(--ease-paper);
+}
+
+.binder-controls button:hover {
+  background: var(--color-accent-soft);
+}
+
+.binder-controls button:active {
+  transform: translateY(1px);
+}
+
+.binder-controls button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.binder-hit-right,
+.binder-hit-left {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 7;
+  cursor: pointer;
+  touch-action: none;
+  background: transparent;
+  border: 0;
+}
+
+.binder-hit-right {
+  right: 0;
+}
+
+.binder-hit-left {
+  left: 0;
+}
