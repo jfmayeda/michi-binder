@@ -42,3 +42,4 @@ _(none yet)_
 ## Assumptions (continued)
 
 - **T3.5 single-page chrome:** binders in `pageMode: 'single'` show one leaf (no spine), using existing binder tokens. Double mode keeps the facing-spread book from T3.4. Drop targets are per-cell droppables (grid-snapped); no extra snap-to-grid library.
+- **T3.6 merge selection:** drag/shift-click fills the bounding rectangle (never blocks a shape). Overlap still rejected by domain validation. Filled unmerge uses an interim confirm + 8s undo toast until T3.7. Merging over existing cell cards adopts the first placement onto the merge.

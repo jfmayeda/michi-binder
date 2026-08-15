@@ -7,6 +7,8 @@ export {
   validateMerge,
   switchPageMode,
   cellsForMerge,
+  proposalFromSelection,
+  adoptPlacementsIntoMerge,
   placeOnMerge,
   placeIntoCell,
   placementFromCard,

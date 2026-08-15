@@ -104,6 +104,73 @@ export function addMerge(binder: Binder, proposal: MergeProposal, id: string): B
   return { ...binder, merges: [...binder.merges, merge] };
 }
 
+/** Bounding rectangle of selected cells. Fills the rectangle (editor never blocks a shape). */
+export function proposalFromSelection(
+  binder: Binder,
+  cells: Cell[],
+): MergeProposal | { error: string } {
+  if (cells.length === 0) return { error: 'empty' };
+  const unique = new Map<string, Cell>();
+  for (const cell of cells) unique.set(`${cell.pageId}:${cell.row}:${cell.col}`, cell);
+  const list = [...unique.values()];
+  const pageIds = [...new Set(list.map((c) => c.pageId))];
+
+  if (pageIds.length === 1) {
+    const pageId = pageIds[0];
+    const row = Math.min(...list.map((c) => c.row));
+    const col = Math.min(...list.map((c) => c.col));
+    const rowSpan = Math.max(...list.map((c) => c.row)) - row + 1;
+    const colSpan = Math.max(...list.map((c) => c.col)) - col + 1;
+    if (rowSpan * colSpan < 2) return { error: '1x1' };
+    return { pageId, row, col, rowSpan, colSpan };
+  }
+
+  if (pageIds.length !== 2) return { error: 'too-many-pages' };
+  if (binder.pageMode !== 'double') return { error: 'single-mode' };
+  const pA = binder.pages.find((p) => p.id === pageIds[0]);
+  const pB = binder.pages.find((p) => p.id === pageIds[1]);
+  if (!pA || !pB) return { error: 'unknown page' };
+  const [left, right] = pA.position < pB.position ? [pA, pB] : [pB, pA];
+  if (!isLeftFacingPage(left.position) || facingRightPosition(left.position) !== right.position) {
+    return { error: 'not-facing' };
+  }
+  const layout = LAYOUTS[binder.layoutId];
+  const mapped = list.map((c) => ({
+    row: c.row,
+    col: c.pageId === left.id ? c.col : c.col + layout.cols,
+  }));
+  const row = Math.min(...mapped.map((c) => c.row));
+  const col = Math.min(...mapped.map((c) => c.col));
+  const rowSpan = Math.max(...mapped.map((c) => c.row)) - row + 1;
+  const colSpan = Math.max(...mapped.map((c) => c.col)) - col + 1;
+  if (!(col < layout.cols && col + colSpan > layout.cols)) return { error: 'not-contiguous-gutter' };
+  return { pageId: left.id, row, col, rowSpan, colSpan, spansGutter: true };
+}
+
+/** After merging, at most one placement remains — adopted onto the merge. */
+export function adoptPlacementsIntoMerge(binder: Binder, mergeId: string): Binder {
+  const merge = binder.merges.find((m) => m.id === mergeId);
+  if (!merge) return binder;
+  const cells = cellsForMerge(binder, merge);
+  if ('error' in cells) return binder;
+  const keys = new Set(cells.map((c) => `${c.pageId}:${c.row}:${c.col}`));
+  const occupying = binder.placements.filter(
+    (p) =>
+      p.mergeId === mergeId ||
+      (p.mergeId == null && p.row != null && p.col != null && keys.has(`${p.pageId}:${p.row}:${p.col}`)),
+  );
+  const keep = occupying[0];
+  const stripped = binder.placements.filter((p) => !occupying.includes(p));
+  if (!keep) return { ...binder, placements: stripped };
+  return {
+    ...binder,
+    placements: [
+      ...stripped,
+      { ...keep, pageId: merge.pageId, mergeId, row: null, col: null },
+    ],
+  };
+}
+
 export function unmerge(
   binder: Binder,
   mergeId: string,

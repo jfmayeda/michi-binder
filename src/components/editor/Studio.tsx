@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   DndContext,
@@ -11,10 +11,15 @@ import {
 } from '@dnd-kit/core';
 import { SearchPanel } from '@/components/search/SearchPanel';
 import {
+  addMerge,
+  adoptPlacementsIntoMerge,
+  cellsForMerge,
   placeIntoCell,
   placementAt,
   placementFromCard,
+  proposalFromSelection,
   removePlacement,
+  unmerge,
 } from '@/domain/slots';
 import { LAYOUTS } from '@/domain/layouts';
 import type { CardHit } from '@/search';
@@ -25,7 +30,7 @@ import {
   readStoredRenderMode,
   type RenderMode,
 } from '@/components/binder/renderMode';
-import type { Binder, Page, Placement } from '@/domain/types';
+import type { Binder, Merge, Page, Placement } from '@/domain/types';
 import { useStudioStore } from '@/state/studioStore';
 
 function resequence(pages: Page[]): Page[] {
@@ -47,6 +52,24 @@ type Pending =
   | { source: 'search'; card: CardHit }
   | { source: 'slot'; placement: Placement };
 
+const MERGE_ERRORS: Record<string, string> = {
+  '1x1': 'Need at least two pockets to merge.',
+  empty: 'Select two or more pockets first.',
+  'single-mode': 'A spread-spanning pocket only works in a double-page binder.',
+  'not-facing': 'Those pages don’t face each other.',
+  'not-contiguous-gutter': 'Cross-page merges have to actually cross the gutter.',
+  'too-many-pages': 'A merge can only live on one page, or one facing pair.',
+  overlap: 'Those pockets already sit inside another merge.',
+  bounds: 'That rectangle doesn’t fit this page.',
+  'unknown page': 'Those pages aren’t in this binder.',
+};
+
+function cellsFromSelected(selected: Set<string>) {
+  return [...selected]
+    .map(parseCellId)
+    .filter((c): c is { pageId: string; row: number; col: number } => c != null);
+}
+
 export function Studio() {
   const { binderId } = useParams<{ binderId: string }>();
   const router = useRouter();
@@ -57,6 +80,14 @@ export function Studio() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [pending, setPending] = useState<Pending | null>(null);
   const [mode, setMode] = useState<RenderMode>('2d');
+  const [mergeHint, setMergeHint] = useState<string | null>(null);
+  const [confirmUnmerge, setConfirmUnmerge] = useState<{ mergeId: string; snapshot: Binder } | null>(
+    null,
+  );
+  const [undoSnapshot, setUndoSnapshot] = useState<Binder | null>(null);
+  const marqueeStart = useRef<{ pageId: string; row: number; col: number } | null>(null);
+  const lastAnchor = useRef<{ pageId: string; row: number; col: number } | null>(null);
+  const marqueeMoved = useRef(false);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
@@ -65,6 +96,20 @@ export function Studio() {
     void refresh();
     setMode(readStoredRenderMode() ?? '2d');
   }, [refresh]);
+
+  useEffect(() => {
+    const end = () => {
+      marqueeStart.current = null;
+    };
+    window.addEventListener('pointerup', end);
+    return () => window.removeEventListener('pointerup', end);
+  }, []);
+
+  useEffect(() => {
+    if (!undoSnapshot) return;
+    const t = window.setTimeout(() => setUndoSnapshot(null), 8000);
+    return () => window.clearTimeout(t);
+  }, [undoSnapshot]);
 
   const sortedPages = useMemo(
     () => (binder ? binder.pages.slice().sort((a, b) => a.position - b.position) : []),
@@ -116,6 +161,63 @@ export function Studio() {
 
   const persist = (next: Binder) => save(next);
 
+  const paintRect = (
+    a: { pageId: string; row: number; col: number },
+    b: { pageId: string; row: number; col: number },
+  ) => {
+    const proposal = proposalFromSelection(binder, [a, b]);
+    if ('error' in proposal) {
+      setSelected(new Set([`${b.pageId}:${b.row}:${b.col}`]));
+      return;
+    }
+    const draft: Merge = {
+      id: 'draft',
+      pageId: proposal.pageId,
+      row: proposal.row,
+      col: proposal.col,
+      rowSpan: proposal.rowSpan,
+      colSpan: proposal.colSpan,
+      spansGutter: Boolean(proposal.spansGutter),
+    };
+    const cells = cellsForMerge(binder, draft);
+    if ('error' in cells) return;
+    setSelected(new Set(cells.map((c) => `${c.pageId}:${c.row}:${c.col}`)));
+  };
+
+  const commitMerge = () => {
+    const proposal = proposalFromSelection(binder, cellsFromSelected(selected));
+    if ('error' in proposal) {
+      setMergeHint(MERGE_ERRORS[proposal.error] ?? proposal.error);
+      return;
+    }
+    try {
+      const id = crypto.randomUUID();
+      persist(adoptPlacementsIntoMerge(addMerge(binder, proposal, id), id));
+      setSelected(new Set());
+      setMergeHint(null);
+    } catch (err) {
+      const code = err instanceof Error ? err.message : 'merge';
+      setMergeHint(MERGE_ERRORS[code] ?? 'Could not merge those pockets.');
+    }
+  };
+
+  const requestUnmerge = (mergeId: string) => {
+    const result = unmerge(binder, mergeId);
+    if (result.needsConfirm) {
+      setConfirmUnmerge({ mergeId, snapshot: binder });
+      return;
+    }
+    persist(result.binder);
+  };
+
+  const confirmFilledUnmerge = () => {
+    if (!confirmUnmerge) return;
+    const gone = unmerge(binder, confirmUnmerge.mergeId, { confirmed: true });
+    persist(gone.binder);
+    setUndoSnapshot(confirmUnmerge.snapshot);
+    setConfirmUnmerge(null);
+  };
+
   const incomingFromPending = (): Placement | null => {
     if (!pending) return null;
     if (pending.source === 'search') {
@@ -135,12 +237,29 @@ export function Studio() {
       placeAt(page.id, row, col, incoming);
       return;
     }
+    if (marqueeMoved.current) return;
     const existing = placementAt(binder, page.id, row, col);
-    if (existing) {
-      setPending({ source: 'slot', placement: existing });
+    if (existing) setPending({ source: 'slot', placement: existing });
+  };
+
+  const onSelectPointerDown = (page: Page, row: number, col: number, event: PointerEvent) => {
+    if (pending) return;
+    if ((event.target as HTMLElement).closest('[data-drag-fill]') && !event.shiftKey) return;
+    const cell = { pageId: page.id, row, col };
+    marqueeMoved.current = false;
+    if (event.shiftKey && lastAnchor.current) {
+      paintRect(lastAnchor.current, cell);
       return;
     }
-    toggle(page, row, col);
+    lastAnchor.current = cell;
+    marqueeStart.current = cell;
+    setSelected(new Set([`${cell.pageId}:${cell.row}:${cell.col}`]));
+  };
+
+  const onSelectPointerEnter = (page: Page, row: number, col: number, event: PointerEvent) => {
+    if (pending || event.buttons !== 1 || !marqueeStart.current) return;
+    marqueeMoved.current = true;
+    paintRect(marqueeStart.current, { pageId: page.id, row, col });
   };
 
   const onDragEnd = (event: DragEndEvent) => {
@@ -169,6 +288,9 @@ export function Studio() {
         onToggle={(r, c) => toggle(page, r, c)}
         onPlace={(r, c) => onCellClick(page, r, c)}
         onRemove={(id) => persist(removePlacement(binder, id))}
+        onUnmerge={requestUnmerge}
+        onSelectPointerDown={(r, c, event) => onSelectPointerDown(page, r, c, event)}
+        onSelectPointerEnter={(r, c, event) => onSelectPointerEnter(page, r, c, event)}
       />
     ) : (
       <p className="p-6 text-ink-soft">{empty}</p>
@@ -214,7 +336,7 @@ export function Studio() {
                 {LAYOUTS[binder.layoutId].cols}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 className="rounded-md bg-paper-sun px-3 py-1.5 text-sm shadow-stamp"
@@ -225,6 +347,14 @@ export function Studio() {
                 }}
               >
                 {mode === '3d' ? '3D' : '2D'}
+              </button>
+              <button
+                type="button"
+                className="rounded-md bg-accent px-3 py-1.5 text-sm text-paper-sun shadow-stamp disabled:opacity-40"
+                disabled={selected.size < 2}
+                onClick={commitMerge}
+              >
+                Merge pockets
               </button>
               <button
                 type="button"
@@ -247,6 +377,13 @@ export function Studio() {
               </button>
             </div>
           </header>
+          {mergeHint ? (
+            <p className="px-4 text-sm text-accent-ink">{mergeHint}</p>
+          ) : (
+            <p className="px-4 text-xs text-ink-faint">
+              Drag or shift-click pockets, then merge. Badges come from the print-split notes.
+            </p>
+          )}
 
           <section className="flex flex-1 flex-col items-center gap-4 overflow-x-auto px-4 pb-6">
             <div className={mode === '3d' ? 'binder-stage' : undefined}>
@@ -380,6 +517,47 @@ export function Studio() {
             </button>
           </section>
         </div>
+        {confirmUnmerge ? (
+          <div className="fixed inset-0 z-30 flex items-center justify-center bg-ink/40">
+            <div className="max-w-sm rounded-lg border border-rule bg-paper p-5 shadow-lift">
+              <p className="font-display text-xl text-ink">Unmerge this filled pocket?</p>
+              <p className="mt-2 text-sm text-ink-soft">
+                The card inside will leave with the merge. You can undo for a moment after.
+              </p>
+              <div className="mt-4 flex gap-2">
+                <button
+                  type="button"
+                  className="rounded-md bg-accent px-3 py-1.5 text-paper-sun"
+                  onClick={confirmFilledUnmerge}
+                >
+                  Unmerge
+                </button>
+                <button
+                  type="button"
+                  className="rounded-md px-3 py-1.5 text-ink-soft"
+                  onClick={() => setConfirmUnmerge(null)}
+                >
+                  Keep it
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+        {undoSnapshot ? (
+          <div className="fixed bottom-6 left-1/2 z-30 -translate-x-1/2 rounded-md border border-rule bg-paper-sun px-4 py-3 shadow-lift">
+            Pocket unmerged.{' '}
+            <button
+              type="button"
+              className="text-accent underline"
+              onClick={() => {
+                persist(undoSnapshot);
+                setUndoSnapshot(null);
+              }}
+            >
+              Undo
+            </button>
+          </div>
+        ) : null}
       </main>
     </DndContext>
   );

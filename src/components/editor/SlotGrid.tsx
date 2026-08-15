@@ -2,7 +2,7 @@
 
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties, PointerEvent, ReactNode } from 'react';
 import { LAYOUTS } from '@/domain/layouts';
 import { cellsForMerge } from '@/domain/slots';
 import { assemblyAnnotation } from '@/domain/split';
@@ -21,12 +21,16 @@ function DropCell({
   style,
   children,
   onClick,
+  onPointerDown,
+  onPointerEnter,
 }: {
   id: string;
   className: string;
   style?: CSSProperties;
   children: ReactNode;
   onClick: () => void;
+  onPointerDown?: (event: PointerEvent) => void;
+  onPointerEnter?: (event: PointerEvent) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   return (
@@ -36,6 +40,8 @@ function DropCell({
       tabIndex={0}
       style={style}
       onClick={onClick}
+      onPointerDown={onPointerDown}
+      onPointerEnter={onPointerEnter}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
@@ -59,6 +65,7 @@ function DragFill({ placement, children }: { placement: Placement; children: Rea
     <div
       ref={setNodeRef}
       style={style}
+      data-drag-fill=""
       className={`h-full ${isDragging ? 'opacity-60' : ''}`}
       {...listeners}
       {...attributes}
@@ -75,6 +82,9 @@ export function SlotGrid({
   onToggle,
   onPlace,
   onRemove,
+  onUnmerge,
+  onSelectPointerDown,
+  onSelectPointerEnter,
 }: {
   binder: Binder;
   page: Page;
@@ -82,6 +92,9 @@ export function SlotGrid({
   onToggle: (row: number, col: number) => void;
   onPlace?: (row: number, col: number) => void;
   onRemove?: (placementId: string) => void;
+  onUnmerge?: (mergeId: string) => void;
+  onSelectPointerDown?: (row: number, col: number, event: PointerEvent) => void;
+  onSelectPointerEnter?: (row: number, col: number, event: PointerEvent) => void;
 }) {
   const layout = LAYOUTS[binder.layoutId];
   const occupied = new Map<string, { mergeId?: string; colSpan: number; rowSpan: number }>();
@@ -141,8 +154,23 @@ export function SlotGrid({
             </span>
           )}
           {merge ? (
-            <span className="absolute right-1 bottom-1 rounded-sm bg-paper px-1 text-[0.55rem] text-accent">
-              {assemblyAnnotation(binder, merge)}
+            <span className="absolute right-1 bottom-1 flex gap-1">
+              <span className="rounded-sm bg-paper px-1 text-[0.55rem] text-accent">
+                {assemblyAnnotation(binder, merge)}
+              </span>
+              {onUnmerge ? (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  className="rounded-sm bg-paper px-1 text-[0.55rem] text-accent-ink"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onUnmerge(merge.id);
+                  }}
+                >
+                  unmerge
+                </span>
+              ) : null}
             </span>
           ) : null}
           {placement && onRemove ? (
@@ -175,6 +203,8 @@ export function SlotGrid({
             if (onPlace) onPlace(r, c);
             else onToggle(r, c);
           }}
+          onPointerDown={(event) => onSelectPointerDown?.(r, c, event)}
+          onPointerEnter={(event) => onSelectPointerEnter?.(r, c, event)}
           className={`relative min-h-16 overflow-hidden rounded-sm border text-left text-[0.65rem] ${
             selectedCell ? 'border-accent bg-accent-soft' : 'border-rule bg-paper-sun/80'
           }`}
