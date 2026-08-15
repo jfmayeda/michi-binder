@@ -34,6 +34,10 @@ Did not stop. `/dev/color-check` on base1: Squirtle/Blastoise land in Blue; Char
 
 Generated calibration PDF (10 cm rulers + 7 × 9.5 cm pocket trim page) and art export PDFs with exact-cm TrimBox. Cannot physically print. **Needs Jacob ruler check.**
 
+### Gate 4 — V1 review (2026-08-15, unattended)
+
+Did not stop. Opened / updated the PR instead.
+
 ## BLOCKED
 
 ### T5.1 live apply + auth round-trip (2026-08-15)
