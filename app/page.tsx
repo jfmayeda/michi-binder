@@ -12,7 +12,11 @@ export default function Home() {
         through paper pages, merge pockets, and print art that actually fits.
       </p>
       <p className="text-ink-faint">
-        Tokens and the page-flip prototype live under{' '}
+        In development, the{' '}
+        <Link href="/shelf" className="text-accent underline decoration-accent-soft underline-offset-4">
+          shelf
+        </Link>{' '}
+        lists binders. Tokens and the page-flip prototype live under{' '}
         <Link href="/dev" className="text-accent underline decoration-accent-soft underline-offset-4">
           /dev
         </Link>
