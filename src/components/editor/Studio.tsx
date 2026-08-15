@@ -36,6 +36,7 @@ import '@/components/binder/binder.css';
 import { SlotGrid } from '@/components/editor/SlotGrid';
 import { CropEditor } from '@/components/editor/CropEditor';
 import { ExportDialog } from '@/components/editor/ExportDialog';
+import { composeSharePng } from '@/export/shareImage';
 import { useConfirmWithUndo } from '@/components/editor/ConfirmWithUndoToast';
 import {
   persistRenderMode,
@@ -567,6 +568,27 @@ export function Studio() {
                 }}
               >
                 Add page
+              </button>
+              <button
+                type="button"
+                className="rounded-md bg-paper-sun px-3 py-1.5 text-sm shadow-stamp"
+                onClick={async () => {
+                  const page = binder.pageMode === 'single' ? singlePage : (rightPage ?? leftPage);
+                  if (!page) return;
+                  try {
+                    const blob = await composeSharePng(binder, page);
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `michi-share-${page.position}.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  } catch {
+                    setMergeHint('Could not stamp a share image for this page.');
+                  }
+                }}
+              >
+                Share image
               </button>
             </div>
           </header>
