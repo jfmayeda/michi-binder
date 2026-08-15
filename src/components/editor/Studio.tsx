@@ -44,6 +44,7 @@ import {
 } from '@/components/binder/renderMode';
 import type { Binder, Merge, Page, Placement, Transform } from '@/domain/types';
 import { useStudioStore } from '@/state/studioStore';
+import { SavedStamp } from '@/components/editor/SavedStamp';
 
 function resequence(pages: Page[]): Page[] {
   return pages.map((p, i) => ({ ...p, position: i + 1 }));
@@ -87,7 +88,7 @@ function cellsFromSelected(selected: Set<string>) {
 export function Studio() {
   const { binderId } = useParams<{ binderId: string }>();
   const router = useRouter();
-  const { binders, loaded, refresh, save, media } = useStudioStore();
+  const { binders, loaded, refresh, save, retrySave, saveStatus, media } = useStudioStore();
   const binder = binders.find((b) => b.id === binderId);
   const [spread, setSpread] = useState(0);
   const [pageIndex, setPageIndex] = useState(0);
@@ -120,6 +121,19 @@ export function Studio() {
     void refresh();
     setMode(readStoredRenderMode() ?? '2d');
   }, [refresh]);
+
+  useEffect(() => {
+    const gone = () => useStudioStore.setState({ saveStatus: 'offline' });
+    const back = () => {
+      void retrySave();
+    };
+    window.addEventListener('offline', gone);
+    window.addEventListener('online', back);
+    return () => {
+      window.removeEventListener('offline', gone);
+      window.removeEventListener('online', back);
+    };
+  }, [retrySave]);
 
   useEffect(() => {
     const end = () => {
@@ -477,6 +491,9 @@ export function Studio() {
                 ← Shelf
               </button>
               <h1 className="font-display text-2xl text-ink">{binder.title}</h1>
+              <div className="mt-1">
+                <SavedStamp status={saveStatus} onRetry={() => void retrySave()} />
+              </div>
               <p className="text-xs text-ink-faint">
                 {binder.layoutId} · {binder.pageMode} · {LAYOUTS[binder.layoutId].rows}×
                 {LAYOUTS[binder.layoutId].cols}
