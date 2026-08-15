@@ -14,6 +14,8 @@ import {
   addMerge,
   adoptPlacementsIntoMerge,
   cellsForMerge,
+  clearPage,
+  deletePage,
   placeIntoCell,
   placementAt,
   placementFromCard,
@@ -25,6 +27,7 @@ import { LAYOUTS } from '@/domain/layouts';
 import type { CardHit } from '@/search';
 import '@/components/binder/binder.css';
 import { SlotGrid } from '@/components/editor/SlotGrid';
+import { useConfirmWithUndo } from '@/components/editor/ConfirmWithUndoToast';
 import {
   persistRenderMode,
   readStoredRenderMode,
@@ -81,13 +84,10 @@ export function Studio() {
   const [pending, setPending] = useState<Pending | null>(null);
   const [mode, setMode] = useState<RenderMode>('2d');
   const [mergeHint, setMergeHint] = useState<string | null>(null);
-  const [confirmUnmerge, setConfirmUnmerge] = useState<{ mergeId: string; snapshot: Binder } | null>(
-    null,
-  );
-  const [undoSnapshot, setUndoSnapshot] = useState<Binder | null>(null);
   const marqueeStart = useRef<{ pageId: string; row: number; col: number } | null>(null);
   const lastAnchor = useRef<{ pageId: string; row: number; col: number } | null>(null);
   const marqueeMoved = useRef(false);
+  const { ask, host } = useConfirmWithUndo<Binder>();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
@@ -104,12 +104,6 @@ export function Studio() {
     window.addEventListener('pointerup', end);
     return () => window.removeEventListener('pointerup', end);
   }, []);
-
-  useEffect(() => {
-    if (!undoSnapshot) return;
-    const t = window.setTimeout(() => setUndoSnapshot(null), 8000);
-    return () => window.clearTimeout(t);
-  }, [undoSnapshot]);
 
   const sortedPages = useMemo(
     () => (binder ? binder.pages.slice().sort((a, b) => a.position - b.position) : []),
@@ -204,18 +198,45 @@ export function Studio() {
   const requestUnmerge = (mergeId: string) => {
     const result = unmerge(binder, mergeId);
     if (result.needsConfirm) {
-      setConfirmUnmerge({ mergeId, snapshot: binder });
+      const snapshot = binder;
+      ask({
+        title: 'Unmerge this filled pocket?',
+        body: 'The card inside will leave with the merge. You can undo for a moment after.',
+        confirmLabel: 'Unmerge',
+        toastMessage: 'Pocket unmerged.',
+        snapshot,
+        apply: () => persist(unmerge(snapshot, mergeId, { confirmed: true }).binder),
+        restore: (snap) => persist(snap),
+      });
       return;
     }
     persist(result.binder);
   };
 
-  const confirmFilledUnmerge = () => {
-    if (!confirmUnmerge) return;
-    const gone = unmerge(binder, confirmUnmerge.mergeId, { confirmed: true });
-    persist(gone.binder);
-    setUndoSnapshot(confirmUnmerge.snapshot);
-    setConfirmUnmerge(null);
+  const askClearPage = (page: Page) => {
+    const snapshot = binder;
+    ask({
+      title: 'Clear this page?',
+      body: 'Every pocket and merge on it empties. You can undo for a moment after.',
+      confirmLabel: 'Clear page',
+      toastMessage: 'Page cleared.',
+      snapshot,
+      apply: () => persist(clearPage(snapshot, page.id)),
+      restore: (snap) => persist(snap),
+    });
+  };
+
+  const askDeletePage = (page: Page) => {
+    const snapshot = binder;
+    ask({
+      title: 'Take this page out?',
+      body: 'Pockets and cards on it leave too. You can undo for a moment after.',
+      confirmLabel: 'Delete page',
+      toastMessage: 'Page removed.',
+      snapshot,
+      apply: () => persist(deletePage(snapshot, page.id)),
+      restore: (snap) => persist(snap),
+    });
   };
 
   const incomingFromPending = (): Placement | null => {
@@ -474,18 +495,16 @@ export function Studio() {
                   <button
                     type="button"
                     className="ml-1 text-xs text-ink-faint"
+                    onClick={() => askClearPage(page)}
+                  >
+                    clear
+                  </button>
+                  <button
+                    type="button"
+                    className="ml-1 text-xs text-ink-faint"
                     onClick={() => {
                       if (binder.pages.length <= 1) return;
-                      persist({
-                        ...binder,
-                        pages: resequence(
-                          binder.pages
-                            .filter((p) => p.id !== page.id)
-                            .sort((a, b) => a.position - b.position),
-                        ),
-                        merges: binder.merges.filter((m) => m.pageId !== page.id),
-                        placements: binder.placements.filter((pl) => pl.pageId !== page.id),
-                      });
+                      askDeletePage(page);
                     }}
                   >
                     ×
@@ -517,47 +536,7 @@ export function Studio() {
             </button>
           </section>
         </div>
-        {confirmUnmerge ? (
-          <div className="fixed inset-0 z-30 flex items-center justify-center bg-ink/40">
-            <div className="max-w-sm rounded-lg border border-rule bg-paper p-5 shadow-lift">
-              <p className="font-display text-xl text-ink">Unmerge this filled pocket?</p>
-              <p className="mt-2 text-sm text-ink-soft">
-                The card inside will leave with the merge. You can undo for a moment after.
-              </p>
-              <div className="mt-4 flex gap-2">
-                <button
-                  type="button"
-                  className="rounded-md bg-accent px-3 py-1.5 text-paper-sun"
-                  onClick={confirmFilledUnmerge}
-                >
-                  Unmerge
-                </button>
-                <button
-                  type="button"
-                  className="rounded-md px-3 py-1.5 text-ink-soft"
-                  onClick={() => setConfirmUnmerge(null)}
-                >
-                  Keep it
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-        {undoSnapshot ? (
-          <div className="fixed bottom-6 left-1/2 z-30 -translate-x-1/2 rounded-md border border-rule bg-paper-sun px-4 py-3 shadow-lift">
-            Pocket unmerged.{' '}
-            <button
-              type="button"
-              className="text-accent underline"
-              onClick={() => {
-                persist(undoSnapshot);
-                setUndoSnapshot(null);
-              }}
-            >
-              Undo
-            </button>
-          </div>
-        ) : null}
+        {host}
       </main>
     </DndContext>
   );

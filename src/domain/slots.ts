@@ -190,6 +190,51 @@ export function unmerge(
   };
 }
 
+export function resequencePages(pages: Page[]): Page[] {
+  return pages
+    .slice()
+    .sort((a, b) => a.position - b.position)
+    .map((p, i) => ({ ...p, position: i + 1 }));
+}
+
+function mergesTouchingPage(binder: Binder, pageId: string): Set<string> {
+  const ids = new Set<string>();
+  for (const merge of binder.merges) {
+    if (merge.pageId === pageId) {
+      ids.add(merge.id);
+      continue;
+    }
+    const cells = cellsForMerge(binder, merge);
+    if ('error' in cells) continue;
+    if (cells.some((c) => c.pageId === pageId)) ids.add(merge.id);
+  }
+  return ids;
+}
+
+export function clearPage(binder: Binder, pageId: string): Binder {
+  const mergeIds = mergesTouchingPage(binder, pageId);
+  return {
+    ...binder,
+    merges: binder.merges.filter((m) => !mergeIds.has(m.id)),
+    placements: binder.placements.filter(
+      (p) => p.pageId !== pageId && !(p.mergeId && mergeIds.has(p.mergeId)),
+    ),
+  };
+}
+
+export function deletePage(binder: Binder, pageId: string): Binder {
+  if (binder.pages.length <= 1) return binder;
+  const mergeIds = mergesTouchingPage(binder, pageId);
+  return {
+    ...binder,
+    pages: resequencePages(binder.pages.filter((p) => p.id !== pageId)),
+    merges: binder.merges.filter((m) => !mergeIds.has(m.id)),
+    placements: binder.placements.filter(
+      (p) => p.pageId !== pageId && !(p.mergeId && mergeIds.has(p.mergeId)),
+    ),
+  };
+}
+
 export function switchPageMode(
   binder: Binder,
   pageMode: Binder['pageMode'],

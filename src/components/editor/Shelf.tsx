@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { LayoutId, PageMode } from '@/domain/layouts';
+import type { Binder } from '@/domain/types';
+import { useConfirmWithUndo } from '@/components/editor/ConfirmWithUndoToast';
 import { useStudioStore } from '@/state/studioStore';
 
 const LAYOUTS: LayoutId[] = ['2x2', '3x3', '4x3', '4x4'];
@@ -13,8 +15,7 @@ export function Shelf() {
   const [title, setTitle] = useState('My binder');
   const [layoutId, setLayoutId] = useState<LayoutId>('3x3');
   const [pageMode, setPageMode] = useState<PageMode>('double');
-  const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
-  const [undoBinder, setUndoBinder] = useState<Awaited<ReturnType<typeof remove>>>(null);
+  const { ask, host } = useConfirmWithUndo<Binder>();
 
   useEffect(() => {
     void refresh();
@@ -117,7 +118,21 @@ export function Shelf() {
                 <button
                   type="button"
                   className="text-sm text-accent-ink"
-                  onClick={() => setPendingDelete({ id: b.id, title: b.title })}
+                  onClick={() =>
+                    ask({
+                      title: 'Put this binder away?',
+                      body: `“${b.title}” will leave the shelf. You can undo for a moment after.`,
+                      confirmLabel: 'Delete',
+                      toastMessage: 'Binder removed.',
+                      snapshot: b,
+                      apply: async () => {
+                        await remove(b.id);
+                      },
+                      restore: async (snapshot) => {
+                        await restore(snapshot);
+                      },
+                    })
+                  }
                 >
                   Delete
                 </button>
@@ -127,48 +142,7 @@ export function Shelf() {
         ))}
       </ul>
 
-      {pendingDelete ? (
-        <div className="fixed inset-0 z-20 flex items-center justify-center bg-ink/40">
-          <div className="max-w-sm rounded-lg border border-rule bg-paper p-5 shadow-lift">
-            <p className="font-display text-xl text-ink">Put this binder away?</p>
-            <p className="mt-2 text-sm text-ink-soft">
-              “{pendingDelete.title}” will leave the shelf. You can undo for a moment after.
-            </p>
-            <div className="mt-4 flex gap-2">
-              <button
-                type="button"
-                className="rounded-md bg-accent px-3 py-1.5 text-paper-sun"
-                onClick={async () => {
-                  const snapshot = await remove(pendingDelete.id);
-                  setUndoBinder(snapshot);
-                  setPendingDelete(null);
-                }}
-              >
-                Delete
-              </button>
-              <button type="button" className="rounded-md px-3 py-1.5 text-ink-soft" onClick={() => setPendingDelete(null)}>
-                Keep it
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {undoBinder ? (
-        <div className="fixed bottom-6 left-1/2 z-20 -translate-x-1/2 rounded-md border border-rule bg-paper-sun px-4 py-3 shadow-lift">
-          Binder removed.{' '}
-          <button
-            type="button"
-            className="text-accent underline"
-            onClick={async () => {
-              await restore(undoBinder);
-              setUndoBinder(null);
-            }}
-          >
-            Undo
-          </button>
-        </div>
-      ) : null}
+      {host}
 
       {/* TODO T5.3: replace this dev-only shelf gate with a real session check. */}
     </main>
