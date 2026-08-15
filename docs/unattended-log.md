@@ -54,6 +54,7 @@ AT-10 unit tests pass against memory Storage. Live signup cannot run (T5.1 auth 
 
 - Gate 1 physical “does it feel like paper on Jacob’s machine / 60 fps” — Chrome in Cloud looked smooth; no DevTools performance profile attached.
 - Safari backface-visibility.
+- **T5.8 Lighthouse:** CLI is not on the approved dependency list. Landing AT-9 e2e is the evidence that the card index is not downloaded. 2D fallback is covered by `/dev/flip?lowperf=1`. CPU 6× throttle was not run as a timed fps assertion (D21).
 
 ## Assumptions (continued)
 
