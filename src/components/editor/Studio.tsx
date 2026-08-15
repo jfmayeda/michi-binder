@@ -602,6 +602,28 @@ export function Studio() {
               type="button"
               className="text-xs text-accent"
               onClick={() => {
+                const pages = binder.pageMode === 'single'
+                  ? [singlePage?.id]
+                  : [leftPage?.id, rightPage?.id];
+                void import('@/export/pullListPdf').then(({ buildPullListPdf }) =>
+                  buildPullListPdf(binder, pages.filter((id): id is string => Boolean(id))).then((bytes) => {
+                    const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'michi-pull-list.pdf';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }),
+                );
+              }}
+            >
+              Download pull list
+            </button>
+            <button
+              type="button"
+              className="text-xs text-accent"
+              onClick={() => {
                 const sorted = binder.pages.slice().sort((a, b) => a.position - b.position);
                 if (sorted.length < 2) return;
                 const a = sorted[sorted.length - 2];
