@@ -23,6 +23,14 @@ export default function DevIndexPage() {
             Page flip — CSS 3D prototype
           </Link>
         </li>
+        <li>
+          <Link
+            href="/dev/flip?lowperf=1"
+            className="block rounded-lg bg-paper-sun px-4 py-3 shadow-soft text-ink hover:bg-accent-soft"
+          >
+            Page flip — force 2D fallback
+          </Link>
+        </li>
       </ul>
     </main>
   );

@@ -16,7 +16,13 @@ work proceeds.
 
 ## Skipped gates
 
-_(none yet — M1 Gate 1 comes after T1.4)_
+### Gate 1 — tokens + flip feel (2026-08-15, unattended)
+
+Did not stop. Judgment: `/dev/styleguide` is warm paper + one clay accent, Fraunces display / Nunito body, linen + grain textures, paper easings. `/dev/flip` CSS 3D turns leaves around the spine; `/dev/flip?lowperf=1` is a first-class 2D slide/crossfade. Kept CSS 3D AND 2D fallback (D3). No WebGL.
+
+### Safari backface
+
+Cloud is Linux/Chrome. **Safari unverified.**
 
 ## BLOCKED
 
@@ -24,4 +30,5 @@ _(none yet)_
 
 ## Unverified
 
-_(none yet)_
+- Gate 1 physical “does it feel like paper on Jacob’s machine / 60 fps” — Chrome in Cloud looked smooth; no DevTools performance profile attached.
+- Safari backface-visibility.

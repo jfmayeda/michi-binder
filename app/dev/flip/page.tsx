@@ -1,5 +1,5 @@
-import { FlipBinder } from '@/components/binder/FlipBinder';
+import { BinderPrototype } from '@/components/binder/BinderPrototype';
 
 export default function FlipPage() {
-  return <FlipBinder />;
+  return <BinderPrototype />;
 }

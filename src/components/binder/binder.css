@@ -330,3 +330,113 @@
 .binder-hit-left {
   left: 0;
 }
+
+.binder-mode-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem 0.9rem;
+  padding: 0.75rem 1rem 0;
+  color: var(--color-ink-soft);
+  font-size: 0.85rem;
+}
+
+.binder-mode-bar button {
+  font-family: var(--font-display);
+  background: var(--color-paper-sun);
+  color: var(--color-ink);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+  padding: 0.25rem 0.75rem;
+  box-shadow: var(--shadow-stamp);
+  cursor: pointer;
+}
+
+.binder-mode-bar button[aria-pressed='true'] {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
+}
+
+.binder-mode-reason {
+  color: var(--color-ink-faint);
+}
+
+.binder-2d {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 18px 1fr;
+  width: min(92vw, 1080px);
+  aspect-ratio: 2.05 / 1;
+  touch-action: none;
+  filter: drop-shadow(0 18px 28px rgb(58 42 28 / 0.28));
+}
+
+.binder-2d .binder-spine {
+  grid-column: 2;
+  z-index: 3;
+}
+
+.binder-2d-spread {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 18px 1fr;
+  transition:
+    opacity var(--duration-flip) var(--ease-paper),
+    transform var(--duration-flip) var(--ease-paper);
+}
+
+.binder-2d-spread .binder-static {
+  position: relative;
+  inset: auto;
+  height: 100%;
+}
+
+.binder-2d-spread .binder-static.left {
+  grid-column: 1;
+}
+
+.binder-2d-spread .binder-static.right {
+  grid-column: 3;
+}
+
+.binder-2d-spread.is-exit-left {
+  opacity: 0;
+  transform: translateX(-7%);
+}
+
+.binder-2d-spread.is-exit-right {
+  opacity: 0;
+  transform: translateX(7%);
+}
+
+.binder-2d-spread.is-enter-right {
+  animation: binder-2d-in-right var(--duration-flip) var(--ease-paper-out);
+}
+
+.binder-2d-spread.is-enter-left {
+  animation: binder-2d-in-left var(--duration-flip) var(--ease-paper-out);
+}
+
+@keyframes binder-2d-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(7%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes binder-2d-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-7%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

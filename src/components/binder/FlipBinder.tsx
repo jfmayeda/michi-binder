@@ -48,7 +48,11 @@ type DragState = {
   moved: boolean;
 };
 
-export function FlipBinder() {
+export function FlipBinder({
+  onFlipMotionStart,
+}: {
+  onFlipMotionStart?: () => void;
+}) {
   const [spread, setSpread] = useState(0);
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const forwardRef = useRef<HTMLDivElement>(null);
@@ -76,6 +80,7 @@ export function FlipBinder() {
       const node = activeRef(dir);
       if (!node) return;
       animatingRef.current = true;
+      onFlipMotionStart?.();
       node.classList.remove('is-dragging');
       node.classList.add('is-animated');
       setFlipVar(dir, target);
@@ -88,7 +93,7 @@ export function FlipBinder() {
       };
       node.addEventListener('transitionend', finish);
     },
-    [activeRef, setFlipVar],
+    [activeRef, onFlipMotionStart, setFlipVar],
   );
 
   const resetFlipper = useCallback(
