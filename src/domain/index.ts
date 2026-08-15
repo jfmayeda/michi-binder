@@ -19,6 +19,7 @@ export {
   removePlacement,
   placementAt,
   slotSize,
+  setOwnership,
 } from './slots';
 export { coverCrop, slotAspect, cropPixelAspect, clampCrop, panCrop, zoomCrop, cropBoxAspect } from './crop';
 export { printPlan, cmToPx, cmToPt, annotationFor } from './print';

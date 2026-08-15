@@ -84,6 +84,7 @@ export function SlotGrid({
   onRemove,
   onUnmerge,
   onExport,
+  onToggleOwnership,
   onSelectPointerDown,
   onSelectPointerEnter,
 }: {
@@ -95,6 +96,7 @@ export function SlotGrid({
   onRemove?: (placementId: string) => void;
   onUnmerge?: (mergeId: string) => void;
   onExport?: (mergeId: string) => void;
+  onToggleOwnership?: (placementId: string, ownership: 'owned' | 'wanted') => void;
   onSelectPointerDown?: (row: number, col: number, event: PointerEvent) => void;
   onSelectPointerEnter?: (row: number, col: number, event: PointerEvent) => void;
 }) {
@@ -186,6 +188,19 @@ export function SlotGrid({
                   unmerge
                 </span>
               ) : null}
+            </span>
+          ) : null}
+          {placement?.kind === 'card' && onToggleOwnership ? (
+            <span
+              role="button"
+              tabIndex={0}
+              className="absolute bottom-1 left-1 rounded-sm bg-paper px-1 text-[0.55rem] text-accent-ink"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleOwnership(placement.id, placement.ownership === 'owned' ? 'wanted' : 'owned');
+              }}
+            >
+              {placement.ownership === 'wanted' ? 'wanted' : 'owned'}
             </span>
           ) : null}
           {placement && onRemove ? (

@@ -298,6 +298,15 @@ function cellMerge(binder: Binder, pageId: string, row: number, col: number): Me
   return undefined;
 }
 
+export function setOwnership(binder: Binder, placementId: string, ownership: Placement['ownership']): Binder {
+  return {
+    ...binder,
+    placements: binder.placements.map((p) =>
+      p.id === placementId && p.kind === 'card' ? { ...p, ownership } : p,
+    ),
+  };
+}
+
 export function placementAt(binder: Binder, pageId: string, row: number, col: number): Placement | undefined {
   const merge = cellMerge(binder, pageId, row, col);
   if (merge) return binder.placements.find((p) => p.mergeId === merge.id);

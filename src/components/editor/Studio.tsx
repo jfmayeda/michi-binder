@@ -25,6 +25,7 @@ import {
   proposalFromSelection,
   removePlacement,
   slotSize,
+  setOwnership,
   switchPageMode,
   unmerge,
 } from '@/domain/slots';
@@ -384,6 +385,7 @@ export function Studio() {
         onRemove={(id) => persist(removePlacement(binder, id))}
         onUnmerge={requestUnmerge}
         onExport={(mergeId) => setExportMergeId(mergeId)}
+        onToggleOwnership={(id, ownership) => persist(setOwnership(binder, id, ownership))}
         onSelectPointerDown={(r, c, event) => onSelectPointerDown(page, r, c, event)}
         onSelectPointerEnter={(r, c, event) => onSelectPointerEnter(page, r, c, event)}
       />
@@ -618,6 +620,30 @@ export function Studio() {
             >
               Swap last two pages
             </button>
+            <section className="mt-4 w-full max-w-xl rounded-md border border-rule bg-paper-sun p-3">
+              <p className="font-display text-sm text-ink">Still need on this spread</p>
+              <ul className="mt-1 text-xs text-ink-soft">
+                {binder.placements.filter((p) => {
+                  const pages = binder.pageMode === 'single'
+                    ? [singlePage?.id]
+                    : [leftPage?.id, rightPage?.id];
+                  return p.kind === 'card' && p.ownership === 'wanted' && pages.includes(p.pageId);
+                }).length === 0 ? (
+                  <li>Nothing wanted here.</li>
+                ) : (
+                  binder.placements
+                    .filter((p) => {
+                      const pages = binder.pageMode === 'single'
+                        ? [singlePage?.id]
+                        : [leftPage?.id, rightPage?.id];
+                      return p.kind === 'card' && p.ownership === 'wanted' && pages.includes(p.pageId);
+                    })
+                    .map((p) => (
+                      <li key={p.id}>{p.cardId}</li>
+                    ))
+                )}
+              </ul>
+            </section>
           </section>
         </div>
         {crop ? (

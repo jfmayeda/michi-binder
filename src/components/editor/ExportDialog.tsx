@@ -114,6 +114,9 @@ export function ExportDialog({
           >
             Calibration sheet
           </button>
+          <button type="button" className="px-3 py-1.5 text-sm text-ink-soft" onClick={onClose}>
+            Close
+          </button>
         </div>
         <p className="mt-3 text-xs text-ink-faint">Print at 100% / actual size. Disable fit-to-page.</p>
       </div>
