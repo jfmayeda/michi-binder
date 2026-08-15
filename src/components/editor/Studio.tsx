@@ -21,6 +21,7 @@ import {
   placementFromCard,
   proposalFromSelection,
   removePlacement,
+  switchPageMode,
   unmerge,
 } from '@/domain/slots';
 import { LAYOUTS } from '@/domain/layouts';
@@ -239,6 +240,25 @@ export function Studio() {
     });
   };
 
+  const askModeSwitch = () => {
+    const next = binder.pageMode === 'double' ? 'single' : 'double';
+    const result = switchPageMode(binder, next);
+    if (!result.needsConfirm) {
+      persist(result.binder);
+      return;
+    }
+    const snapshot = binder;
+    ask({
+      title: `This will unmerge ${result.crossPageCount} cross-page slot${result.crossPageCount === 1 ? '' : 's'}`,
+      body: 'Spread-spanning pockets (and cards in them) leave. In-page merges stay. You can undo for a moment after.',
+      confirmLabel: 'Switch to single',
+      toastMessage: 'Switched to single pages.',
+      snapshot,
+      apply: () => persist(switchPageMode(snapshot, 'single', { confirmed: true }).binder),
+      restore: (snap) => persist(snap),
+    });
+  };
+
   const incomingFromPending = (): Placement | null => {
     if (!pending) return null;
     if (pending.source === 'search') {
@@ -368,6 +388,13 @@ export function Studio() {
                 }}
               >
                 {mode === '3d' ? '3D' : '2D'}
+              </button>
+              <button
+                type="button"
+                className="rounded-md bg-paper-sun px-3 py-1.5 text-sm shadow-stamp"
+                onClick={askModeSwitch}
+              >
+                Switch to {binder.pageMode === 'double' ? 'single' : 'double'}
               </button>
               <button
                 type="button"
