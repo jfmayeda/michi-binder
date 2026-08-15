@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "kind": "page-template",
+  "id": "kanto-starters",
+  "title": "Kanto desk (draft)",
+  "draft": true,
+  "notes": "Draft page template — Jacob will replace.",
+  "layoutId": "3x3",
+  "pageMode": "single",
+  "pages": [
+    {
+      "id": "kanto-starters-p1",
+      "position": 1
+    }
+  ],
+  "merges": [],
+  "placements": [
+    {
+      "id": "kanto-starters-pl0",
+      "pageId": "kanto-starters-p1",
+      "mergeId": null,
+      "row": 0,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base1-46",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base1-46",
+        "name": "Charmander",
+        "set": "base1",
+        "number": "46",
+        "imageUrl": "https://images.pokemontcg.io/base1/46.png"
+      }
+    },
+    {
+      "id": "kanto-starters-pl1",
+      "pageId": "kanto-starters-p1",
+      "mergeId": null,
+      "row": 0,
+      "col": 1,
+      "kind": "card",
+      "cardId": "base1-63",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base1-63",
+        "name": "Squirtle",
+        "set": "base1",
+        "number": "63",
+        "imageUrl": "https://images.pokemontcg.io/base1/63.png"
+      }
+    },
+    {
+      "id": "kanto-starters-pl2",
+      "pageId": "kanto-starters-p1",
+      "mergeId": null,
+      "row": 0,
+      "col": 2,
+      "kind": "card",
+      "cardId": "base1-44",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base1-44",
+        "name": "Bulbasaur",
+        "set": "base1",
+        "number": "44",
+        "imageUrl": "https://images.pokemontcg.io/base1/44.png"
+      }
+    }
+  ]
+}

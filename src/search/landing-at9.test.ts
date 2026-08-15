@@ -7,4 +7,10 @@ describe('AT-9 landing must not load the card catalog', () => {
     expect(src).not.toMatch(/@\/search/);
     expect(src).not.toMatch(/cards-index/);
   });
+
+  it('LandingDesk does not import search or cards-index', () => {
+    const src = readFileSync('src/components/landing/LandingDesk.tsx', 'utf8');
+    expect(src).not.toMatch(/@\/search/);
+    expect(src).not.toMatch(/cards-index/);
+  });
 });

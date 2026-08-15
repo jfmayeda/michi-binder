@@ -163,6 +163,33 @@ function main() {
   writeJson(join(OUT_DIR, 'dex-species.json'), dexSpecies);
   writeJson(join(OUT_DIR, 'image-exceptions.json'), exceptions);
 
+  const catalogDir = join(ROOT, 'src/templates/catalog');
+  for (const file of readdirSync(catalogDir)) {
+    if (!file.endsWith('.json') || file === 'manifest.json') continue;
+    const path = join(catalogDir, file);
+    const tpl = JSON.parse(readFileSync(path, 'utf8')) as {
+      placements: Array<{
+        kind: string;
+        cardId: string | null;
+        card?: unknown;
+      }>;
+    };
+    for (const placement of tpl.placements) {
+      if (placement.kind !== 'card' || !placement.cardId) continue;
+      const i = id.indexOf(placement.cardId);
+      if (i < 0) continue;
+      const derived = derivedImageUrls(setId[i], number[i]);
+      placement.card = {
+        card_id: placement.cardId,
+        name: name[i],
+        set: setId[i],
+        number: number[i],
+        imageUrl: derived.small,
+      };
+    }
+    writeJson(path, tpl);
+  }
+
   const indexPath = join(OUT_DIR, 'cards-index.json');
   const indexBytes = readFileSync(indexPath).byteLength;
   const hash = createHash('sha256').update(readFileSync(indexPath)).digest('hex').slice(0, 12);

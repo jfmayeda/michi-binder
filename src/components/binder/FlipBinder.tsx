@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import './binder.css';
-import { SPREAD_COUNT, spreadPages, type DummyPage } from './dummyPages';
+import { SPREAD_COUNT, spreadCountFor, spreadPages, type DummyPage } from './dummyPages';
 
 function CoverPage({ title, kicker }: { title: string; kicker: string }) {
   return (
@@ -10,8 +10,7 @@ function CoverPage({ title, kicker }: { title: string; kicker: string }) {
       <p className="binder-page-kicker">{kicker}</p>
       <h2 className="binder-page-title">{title}</h2>
       <p className="binder-page-note">
-        Cloth-bound, rings in the gutter, paper that wants to be turned. This is only
-        dummy content — the real spreads arrive in M3.
+        Cloth-bound, rings in the gutter, paper that wants to be turned.
       </p>
     </div>
   );
@@ -26,15 +25,59 @@ export function DummySheet({ page }: { page: DummyPage | 'cover' | 'back' }) {
   }
 
   const filled = page.id % 3;
+  const rows = page.rows ?? 3;
+  const cols = page.cols ?? 3;
+  const slots = page.slots;
   return (
     <div className={`binder-page wash-${page.wash}`}>
       <p className="binder-page-kicker">Dummy leaf</p>
       <h2 className="binder-page-title">{page.label}</h2>
       <p className="binder-page-note">{page.note}</p>
-      <div className="binder-grid" aria-hidden="true">
-        {Array.from({ length: 9 }, (_, i) => (
-          <div key={i} className={i % 3 === filled ? 'binder-slot filled' : 'binder-slot'} />
-        ))}
+      <div
+        className="binder-grid"
+        aria-hidden="true"
+        style={{
+          gridTemplateColumns: `repeat(${cols}, 1fr)`,
+          gridTemplateRows: `repeat(${rows}, 1fr)`,
+        }}
+      >
+        {slots
+          ? Array.from({ length: rows * cols }, (_, i) => {
+              const row = Math.floor(i / cols);
+              const col = i % cols;
+              const slot = slots.find((s) => s.row === row && s.col === col);
+              if (
+                slots.some(
+                  (s) =>
+                    !(s.row === row && s.col === col) &&
+                    row >= s.row &&
+                    row < s.row + s.rowSpan &&
+                    col >= s.col &&
+                    col < s.col + s.colSpan,
+                )
+              ) {
+                return null;
+              }
+              return (
+                <div
+                  key={i}
+                  className={slot?.imageUrl ? 'binder-slot filled' : slot ? 'binder-slot filled' : 'binder-slot'}
+                  style={
+                    slot
+                      ? { gridColumn: `span ${slot.colSpan}`, gridRow: `span ${slot.rowSpan}` }
+                      : undefined
+                  }
+                >
+                  {slot?.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={slot.imageUrl} alt="" loading="lazy" className="binder-slot-img" />
+                  ) : null}
+                </div>
+              );
+            })
+          : Array.from({ length: 9 }, (_, i) => (
+              <div key={i} className={i % 3 === filled ? 'binder-slot filled' : 'binder-slot'} />
+            ))}
       </div>
     </div>
   );
@@ -50,9 +93,17 @@ type DragState = {
 
 export function FlipBinder({
   onFlipMotionStart,
+  pages,
+  hint,
+  onSpreadChange,
 }: {
   onFlipMotionStart?: () => void;
+  pages?: DummyPage[];
+  hint?: string;
+  onSpreadChange?: (spread: number) => void;
 }) {
+  const leaves = pages ?? undefined;
+  const total = pages ? spreadCountFor(pages) : SPREAD_COUNT;
   const [spread, setSpread] = useState(0);
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const forwardRef = useRef<HTMLDivElement>(null);
@@ -71,9 +122,9 @@ export function FlipBinder({
     activeRef(dir)?.style.setProperty('--flip', String(value));
   }, [activeRef]);
 
-  const current = spreadPages(spread);
-  const upcoming = spreadPages(Math.min(spread + 1, SPREAD_COUNT - 1));
-  const previous = spreadPages(Math.max(spread - 1, 0));
+  const current = spreadPages(spread, leaves);
+  const upcoming = spreadPages(Math.min(spread + 1, total - 1), leaves);
+  const previous = spreadPages(Math.max(spread - 1, 0), leaves);
 
   const animateTo = useCallback(
     (dir: 'forward' | 'back', target: number, onDone: () => void) => {
@@ -108,15 +159,16 @@ export function FlipBinder({
 
   const goForward = useCallback(() => {
     if (animatingRef.current || dragRef.current) return;
-    if (spreadRef.current >= SPREAD_COUNT - 1) return;
+    if (spreadRef.current >= total - 1) return;
     setDirection('forward');
     setFlipVar('forward', 0);
     animateTo('forward', 180, () => {
       spreadRef.current += 1;
       setSpread(spreadRef.current);
+      onSpreadChange?.(spreadRef.current);
       resetFlipper('forward');
     });
-  }, [animateTo, resetFlipper, setFlipVar]);
+  }, [animateTo, onSpreadChange, resetFlipper, setFlipVar, total]);
 
   const goBack = useCallback(() => {
     if (animatingRef.current || dragRef.current) return;
@@ -126,9 +178,10 @@ export function FlipBinder({
     animateTo('back', 180, () => {
       spreadRef.current -= 1;
       setSpread(spreadRef.current);
+      onSpreadChange?.(spreadRef.current);
       resetFlipper('back');
     });
-  }, [animateTo, resetFlipper, setFlipVar]);
+  }, [animateTo, onSpreadChange, resetFlipper, setFlipVar]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -146,7 +199,7 @@ export function FlipBinder({
 
   const onPointerDown = (event: React.PointerEvent, dir: 'forward' | 'back') => {
     if (animatingRef.current) return;
-    if (dir === 'forward' && spreadRef.current >= SPREAD_COUNT - 1) return;
+    if (dir === 'forward' && spreadRef.current >= total - 1) return;
     if (dir === 'back' && spreadRef.current <= 0) return;
     const node = activeRef(dir);
     const book = bookRef.current;
@@ -189,6 +242,7 @@ export function FlipBinder({
       animateTo(dir, 180, () => {
         spreadRef.current += dir === 'forward' ? 1 : -1;
         setSpread(spreadRef.current);
+        onSpreadChange?.(spreadRef.current);
         resetFlipper(dir);
       });
     } else {
@@ -201,8 +255,8 @@ export function FlipBinder({
   return (
     <div className="binder-desk">
       <p className="binder-hint">
-        Click a page edge, drag the leaf, or use the arrow keys. Six dummy pages —
-        page 1 sits alone on the right, just like a real binder.
+        {hint ??
+          'Click a page edge, drag the leaf, or use the arrow keys. Six dummy pages — page 1 sits alone on the right, just like a real binder.'}
       </p>
       <div className="binder-stage">
         <div className="binder-book" ref={bookRef}>
@@ -290,9 +344,9 @@ export function FlipBinder({
           Previous
         </button>
         <span>
-          Spread {spread + 1} of {SPREAD_COUNT}
+          Spread {spread + 1} of {total}
         </span>
-        <button type="button" onClick={goForward} disabled={spread >= SPREAD_COUNT - 1}>
+        <button type="button" onClick={goForward} disabled={spread >= total - 1}>
           Next
         </button>
       </div>

@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "kind": "page-template",
+  "id": "gengar-night",
+  "title": "Gengar night (draft)",
+  "draft": true,
+  "notes": "Draft page template — Jacob will replace.",
+  "layoutId": "3x3",
+  "pageMode": "single",
+  "pages": [
+    {
+      "id": "gengar-night-p1",
+      "position": 1
+    }
+  ],
+  "merges": [],
+  "placements": [
+    {
+      "id": "gengar-night-pl0",
+      "pageId": "gengar-night-p1",
+      "mergeId": null,
+      "row": 0,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base3-20",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base3-20",
+        "name": "Gengar",
+        "set": "base3",
+        "number": "20",
+        "imageUrl": "https://images.pokemontcg.io/base3/20.png"
+      }
+    },
+    {
+      "id": "gengar-night-pl1",
+      "pageId": "gengar-night-p1",
+      "mergeId": null,
+      "row": 2,
+      "col": 2,
+      "kind": "card",
+      "cardId": "base3-19",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base3-19",
+        "name": "Dragonite",
+        "set": "base3",
+        "number": "19",
+        "imageUrl": "https://images.pokemontcg.io/base3/19.png"
+      }
+    },
+    {
+      "id": "gengar-night-pl2",
+      "pageId": "gengar-night-p1",
+      "mergeId": null,
+      "row": 1,
+      "col": 1,
+      "kind": "card",
+      "cardId": "bw11-80",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "bw11-80",
+        "name": "Lucario",
+        "set": "bw11",
+        "number": "80",
+        "imageUrl": "https://images.pokemontcg.io/bw11/80.png"
+      }
+    }
+  ]
+}

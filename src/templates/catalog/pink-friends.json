@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "kind": "page-template",
+  "id": "pink-friends",
+  "title": "Pink friends (draft)",
+  "draft": true,
+  "notes": "Draft page template — Jacob will replace.",
+  "layoutId": "3x3",
+  "pageMode": "single",
+  "pages": [
+    {
+      "id": "pink-friends-p1",
+      "position": 1
+    }
+  ],
+  "merges": [],
+  "placements": [
+    {
+      "id": "pink-friends-pl0",
+      "pageId": "pink-friends-p1",
+      "mergeId": null,
+      "row": 0,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base2-54",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base2-54",
+        "name": "Jigglypuff",
+        "set": "base2",
+        "number": "54",
+        "imageUrl": "https://images.pokemontcg.io/base2/54.png"
+      }
+    },
+    {
+      "id": "pink-friends-pl1",
+      "pageId": "pink-friends-p1",
+      "mergeId": null,
+      "row": 0,
+      "col": 1,
+      "kind": "card",
+      "cardId": "base2-16",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base2-16",
+        "name": "Wigglytuff",
+        "set": "base2",
+        "number": "16",
+        "imageUrl": "https://images.pokemontcg.io/base2/16.png"
+      }
+    },
+    {
+      "id": "pink-friends-pl2",
+      "pageId": "pink-friends-p1",
+      "mergeId": null,
+      "row": 1,
+      "col": 1,
+      "kind": "card",
+      "cardId": "pgo-35",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "pgo-35",
+        "name": "Sylveon",
+        "set": "pgo",
+        "number": "35",
+        "imageUrl": "https://images.pokemontcg.io/pgo/35.png"
+      }
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DummySheet } from './FlipBinder';
-import { SPREAD_COUNT, spreadPages } from './dummyPages';
+import { SPREAD_COUNT, spreadCountFor, spreadPages, type DummyPage } from './dummyPages';
 
 type DragState = {
   pointerId: number;
@@ -12,9 +12,17 @@ type DragState = {
 
 export function Binder2D({
   onFlipMotionStart,
+  pages,
+  hint,
+  onSpreadChange,
 }: {
   onFlipMotionStart?: () => void;
+  pages?: DummyPage[];
+  hint?: string;
+  onSpreadChange?: (spread: number) => void;
 }) {
+  const leaves = pages;
+  const total = pages ? spreadCountFor(pages) : SPREAD_COUNT;
   const [spread, setSpread] = useState(0);
   const [phase, setPhase] = useState<'idle' | 'out' | 'in'>('idle');
   const [dir, setDir] = useState<'forward' | 'back'>('forward');
@@ -22,24 +30,25 @@ export function Binder2D({
   const dragRef = useRef<DragState | null>(null);
   const spreadRef = useRef(0);
 
-  const current = spreadPages(spread);
+  const current = spreadPages(spread, leaves);
 
   const goTo = useCallback(
     (next: number, direction: 'forward' | 'back') => {
       if (phase !== 'idle') return;
-      if (next < 0 || next >= SPREAD_COUNT || next === spreadRef.current) return;
+      if (next < 0 || next >= total || next === spreadRef.current) return;
       onFlipMotionStart?.();
       setDir(direction);
       pendingRef.current = next;
       setPhase('out');
     },
-    [onFlipMotionStart, phase],
+    [onFlipMotionStart, phase, total],
   );
 
   const onTransitionEnd = () => {
     if (phase === 'out' && pendingRef.current != null) {
       spreadRef.current = pendingRef.current;
       setSpread(pendingRef.current);
+      onSpreadChange?.(pendingRef.current);
       pendingRef.current = null;
       setPhase('in');
       return;
@@ -101,8 +110,8 @@ export function Binder2D({
   return (
     <div className="binder-desk">
       <p className="binder-hint">
-        2D mode — a flat spread with a paper slide/crossfade. Same dummy pages, same
-        tokens. Click, drag, or use the arrow keys.
+        {hint ??
+          '2D mode — a flat spread with a paper slide/crossfade. Same dummy pages, same tokens. Click, drag, or use the arrow keys.'}
       </p>
       <div
         className="binder-2d"
@@ -136,12 +145,12 @@ export function Binder2D({
           Previous
         </button>
         <span>
-          Spread {spread + 1} of {SPREAD_COUNT}
+          Spread {spread + 1} of {total}
         </span>
         <button
           type="button"
           onClick={() => goTo(spread + 1, 'forward')}
-          disabled={spread >= SPREAD_COUNT - 1}
+          disabled={spread >= total - 1}
         >
           Next
         </button>

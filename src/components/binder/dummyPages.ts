@@ -3,6 +3,15 @@ export type DummyPage = {
   label: string;
   note: string;
   wash: 'sun' | 'shade' | 'deep' | 'paper';
+  rows?: number;
+  cols?: number;
+  slots?: {
+    row: number;
+    col: number;
+    rowSpan: number;
+    colSpan: number;
+    imageUrl?: string;
+  }[];
 };
 
 /** Six dummy leaves so the M1 prototype can flip a whole short binder. */
@@ -15,15 +24,22 @@ export const DUMMY_PAGES: DummyPage[] = [
   { id: 6, label: 'Page 6', note: 'Last leaf — back cover waits on the right.', wash: 'paper' },
 ];
 
-export const SPREAD_COUNT = 4;
+export function spreadCountFor(pages: DummyPage[]) {
+  return 1 + Math.ceil(Math.max(0, pages.length - 1) / 2);
+}
 
-/** Facing pairs: spread 0 = cover|1, then (2,3), (4,5), (6|back). */
-export function spreadPages(spreadIndex: number): {
+export const SPREAD_COUNT = spreadCountFor(DUMMY_PAGES);
+
+/** Facing pairs: spread 0 = cover|1, then (2,3), (4,5)… last odd page may face the back cover. */
+export function spreadPages(
+  spreadIndex: number,
+  pages: DummyPage[] = DUMMY_PAGES,
+): {
   left: DummyPage | 'cover' | 'back';
   right: DummyPage | 'cover' | 'back';
 } {
-  if (spreadIndex <= 0) return { left: 'cover', right: DUMMY_PAGES[0] };
-  if (spreadIndex === 1) return { left: DUMMY_PAGES[1], right: DUMMY_PAGES[2] };
-  if (spreadIndex === 2) return { left: DUMMY_PAGES[3], right: DUMMY_PAGES[4] };
-  return { left: DUMMY_PAGES[5], right: 'back' };
+  if (spreadIndex <= 0) return { left: 'cover', right: pages[0] ?? 'back' };
+  const left = pages[spreadIndex * 2 - 1];
+  const right = pages[spreadIndex * 2];
+  return { left: left ?? 'back', right: right ?? 'back' };
 }

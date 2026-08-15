@@ -6,6 +6,8 @@ import type { LayoutId, PageMode } from '@/domain/layouts';
 import type { Binder } from '@/domain/types';
 import { useConfirmWithUndo } from '@/components/editor/ConfirmWithUndoToast';
 import { useStudioStore } from '@/state/studioStore';
+import { pageTemplates } from '@/templates/catalog';
+import { cloneTemplatePage } from '@/templates/clone';
 
 const LAYOUTS: LayoutId[] = ['2x2', '3x3', '4x3', '4x4'];
 
@@ -15,6 +17,7 @@ export function Shelf() {
   const [title, setTitle] = useState('My binder');
   const [layoutId, setLayoutId] = useState<LayoutId>('3x3');
   const [pageMode, setPageMode] = useState<PageMode>('double');
+  const [templateId, setTemplateId] = useState('');
   const { ask, host } = useConfirmWithUndo<Binder>();
 
   useEffect(() => {
@@ -33,6 +36,15 @@ export function Shelf() {
         className="mt-8 grid gap-3 rounded-lg border border-rule bg-paper-sun p-4 shadow-page sm:grid-cols-2"
         onSubmit={async (e) => {
           e.preventDefault();
+          const picked = pageTemplates.find((t) => t.id === templateId);
+          if (picked) {
+            const cloned = cloneTemplatePage(picked, 1, crypto.randomUUID());
+            cloned.title = title;
+            await useStudioStore.getState().restore(cloned);
+            await refresh();
+            router.push(`/studio/${cloned.id}`);
+            return;
+          }
           const binder = await create({ title, layoutId, pageMode });
           router.push(`/studio/${binder.id}`);
         }}
@@ -70,9 +82,24 @@ export function Shelf() {
             <option value="single">Single</option>
           </select>
         </label>
+        <label className="flex flex-col gap-1 text-sm text-ink-soft sm:col-span-2">
+          Start from a draft template
+          <select
+            value={templateId}
+            onChange={(e) => setTemplateId(e.target.value)}
+            className="rounded-md border border-rule bg-paper px-3 py-2 text-ink shadow-stamp"
+          >
+            <option value="">Blank binder</option>
+            {pageTemplates.map((tpl) => (
+              <option key={tpl.id} value={tpl.id}>
+                {tpl.title}
+              </option>
+            ))}
+          </select>
+        </label>
         <button
           type="submit"
-          className="self-end rounded-md bg-accent px-4 py-2 font-display text-paper-sun shadow-stamp"
+          className="self-end rounded-md bg-accent px-4 py-2 font-display text-paper-sun shadow-stamp sm:col-span-2"
         >
           Start a binder
         </button>

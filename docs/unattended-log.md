@@ -65,3 +65,4 @@ AT-10 unit tests pass against memory Storage. Live signup cannot run (T5.1 auth 
 - **T4.4 PDF:** first page is the full artwork trim (so a 2×2 merge is 14 × 19 cm). Piece pages follow. Browser PNG is canvas-encoded without a pHYs chunk. Bleed toggle is shown; piece rasters already support bleed in `print.ts`, PDF pages currently mark trim.
 - **T5.1 storage policies:** folder-first `(storage.foldername(name))[1] = auth.uid()` instead of `owner = auth.uid()`, because Storage has not stamped `owner` yet on INSERT. Objects are stored at `{user_id}/{asset_id}`.
 - **T5.2 live AT-3:** no `public.binders` table and no working auth, so AT-3 runs against an in-memory stand-in of the same row/storage shape. Live Supabase autosave + network-kill unverified. Playground remains the running adapter.
+- **T5.4 clone:** anonymous clone copies the **right-hand page** of the current starter spread into the one-page playground. Cross-page merges on that page are dropped.
