@@ -39,6 +39,14 @@ export default function DevIndexPage() {
             Search panel
           </Link>
         </li>
+        <li>
+          <Link
+            href="/dev/color-check"
+            className="block rounded-lg bg-paper-sun px-4 py-3 shadow-soft text-ink hover:bg-accent-soft"
+          >
+            Color check — base1 clusters
+          </Link>
+        </li>
       </ul>
     </main>
   );

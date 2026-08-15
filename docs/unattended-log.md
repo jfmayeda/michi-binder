@@ -26,6 +26,10 @@ Did not stop. Judgment: `/dev/styleguide` is warm paper + one clay accent, Fraun
 
 Cloud is Linux/Chrome. **Safari unverified.**
 
+### Gate 2 — color clusters (2026-08-15, unattended)
+
+Did not stop. `/dev/color-check` on base1: Squirtle/Blastoise land in Blue; Charmander/Charizard in Orange/Red; Pikachu in Yellow. A few frame-color misses (Chansey/Clefairy in Blue, Staryu in Yellow) — overall sane enough to authorize the T5.6 full-catalog run. 4x3 insertion map still unverified; safe-split default stands.
+
 ## BLOCKED
 
 _(none yet)_
