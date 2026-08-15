@@ -1,3 +1,112 @@
-/* T1.2 will define the cozy @theme tokens here. Placeholder so the stylesheet graph is in place. */
+/* Michi Binder Studio — cozy design tokens (T1.2)
+   Warm scrapbook paper, one clay accent, paper-like motion.
+   Palette swaps happen by changing these names — never raw Tailwind colors. */
+
 @theme {
+  /* Color — paper, ink, one accent */
+  --color-paper: #f6ebd9;
+  --color-paper-sun: #fbf4e8;
+  --color-paper-shade: #e8d4b8;
+  --color-paper-deep: #d4bc96;
+  --color-ink: #3a2a1c;
+  --color-ink-soft: #6b5344;
+  --color-ink-faint: #a08a76;
+  --color-rule: #d4c0a1;
+  --color-accent: #c45c3e;
+  --color-accent-hover: #a84c32;
+  --color-accent-soft: #f0d2c8;
+  --color-accent-ink: #7a3220;
+
+  /* Typography — next/font variables applied on <html> */
+  --font-display: var(--font-fraunces), 'Fraunces', ui-serif, Georgia, serif;
+  --font-sans: var(--font-nunito), 'Nunito', ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-nunito), 'Nunito', ui-sans-serif, system-ui, sans-serif;
+
+  /* Spacing — slightly generous, scrapbook margins */
+  --spacing-page: 2.5rem;
+  --spacing-spread: 1.75rem;
+  --spacing-slot: 0.35rem;
+
+  /* Radius — worn paper corners, never crisp pills */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+  --radius-page: 0.125rem 0.5rem 0.5rem 0.125rem;
+
+  /* Shadows — warm ink, layered, never cool gray */
+  --shadow-soft: 0 2px 8px rgb(58 42 28 / 0.08), 0 1px 2px rgb(58 42 28 / 0.06);
+  --shadow-page: 0 10px 28px rgb(58 42 28 / 0.14), 0 2px 8px rgb(58 42 28 / 0.08);
+  --shadow-lift: 0 16px 40px rgb(58 42 28 / 0.18), 0 4px 12px rgb(58 42 28 / 0.1);
+  --shadow-stamp: 0 1px 0 rgb(58 42 28 / 0.16), 0 2px 4px rgb(58 42 28 / 0.08);
+  --shadow-inset-page: inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -2px 6px rgb(58 42 28 / 0.06);
+
+  /* Motion — paper, not corporate snaps */
+  --ease-paper: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-paper-flip: cubic-bezier(0.45, 0.02, 0.28, 1);
+  --ease-paper-in: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-paper-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-quick: 160ms;
+  --duration-soft: 280ms;
+  --duration-flip: 700ms;
+  --duration-linger: 900ms;
+
+  /* Textures (SVG assets) */
+  --texture-paper: url('/textures/paper-grain.svg');
+  --texture-linen: url('/textures/linen.svg');
+}
+
+@layer base {
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-paper);
+    background-image: var(--texture-paper);
+    background-repeat: repeat;
+    color: var(--color-ink);
+    min-height: 100dvh;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: var(--color-accent-soft);
+    color: var(--color-accent-ink);
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  .texture-paper {
+    background-image: var(--texture-paper);
+  }
+
+  .texture-linen {
+    background-image: var(--texture-linen);
+  }
+
+  .ease-paper {
+    transition-timing-function: var(--ease-paper);
+  }
+
+  .ease-paper-flip {
+    transition-timing-function: var(--ease-paper-flip);
+  }
 }

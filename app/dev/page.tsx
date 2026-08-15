@@ -1,14 +1,27 @@
+import Link from 'next/link';
+
 export default function DevIndexPage() {
   return (
-    <main>
-      <h1>Dev playground</h1>
-      <p>This route is excluded from production builds.</p>
-      <ul>
+    <main className="mx-auto max-w-xl px-8 py-16">
+      <p className="font-display text-sm tracking-wide text-ink-soft uppercase">Dev only</p>
+      <h1 className="mt-2 font-display text-4xl text-ink">Dev playground</h1>
+      <p className="mt-3 text-ink-soft">This route 404s in production builds.</p>
+      <ul className="mt-8 flex flex-col gap-3">
         <li>
-          <a href="/dev/styleguide">Styleguide (T1.2)</a>
+          <Link
+            href="/dev/styleguide"
+            className="block rounded-lg bg-paper-sun px-4 py-3 shadow-soft text-ink hover:bg-accent-soft"
+          >
+            Styleguide — tokens, type, motion
+          </Link>
         </li>
         <li>
-          <a href="/dev/flip">Page flip (T1.3)</a>
+          <Link
+            href="/dev/flip"
+            className="block rounded-lg bg-paper-sun px-4 py-3 shadow-soft text-ink hover:bg-accent-soft"
+          >
+            Page flip — CSS 3D prototype
+          </Link>
         </li>
       </ul>
     </main>

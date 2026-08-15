@@ -1,7 +1,8 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // Dev-only routes live under app/dev and 404 in production via the layout gate.
+  // Keep AGENTS.md as the product contract; do not let next dev rewrite it.
+  agentRules: false,
 };
 
 export default nextConfig;
