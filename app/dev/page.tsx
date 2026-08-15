@@ -31,6 +31,14 @@ export default function DevIndexPage() {
             Page flip — force 2D fallback
           </Link>
         </li>
+        <li>
+          <Link
+            href="/dev/search"
+            className="block rounded-lg bg-paper-sun px-4 py-3 shadow-soft text-ink hover:bg-accent-soft"
+          >
+            Search panel
+          </Link>
+        </li>
       </ul>
     </main>
   );

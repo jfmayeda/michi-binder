@@ -13,6 +13,8 @@ work proceeds.
 - **Import alias:** `@/*` maps to `./src/*` so domain code imports as `@/domain/...`.
 - **Script runner:** Node 22 `--experimental-strip-types` instead of adding unapproved `tsx`.
 - **Next.js version:** latest stable at scaffold time (16.3.1) with React 19 and Tailwind v4.
+- **T2.3 virtualization:** no virtualizer on the approved dependency list — shipped a small in-house `VirtualGrid` (windowed rows, no extra package).
+- **T2.3 facets:** type is chips; set / species / artist / rarity / era are token-styled `<select>`s because those lists are hundreds of values.
 
 ## Skipped gates
 
