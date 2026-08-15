@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { SignInPanel } from '@/components/auth/SignInPanel';
 
 export default function Home() {
   return (
@@ -22,6 +23,7 @@ export default function Home() {
         </Link>
         .
       </p>
+      <SignInPanel />
     </main>
   );
 }

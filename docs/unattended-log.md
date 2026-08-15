@@ -36,7 +36,15 @@ Generated calibration PDF (10 cm rulers + 7 × 9.5 cm pocket trim page) and art 
 
 ## BLOCKED
 
-_(none yet)_
+### T5.1 live apply + auth round-trip (2026-08-15)
+
+Migrations and Auth UI are in the repo. Live AC did not pass after two honest attempts.
+
+**Attempt 1:** `GET /auth/v1/health` without apikey → 401. `POST /auth/v1/otp` → 422 `otp_disabled` / “Signups not allowed for otp”. `GET /rest/v1/binders` with anon key → 404 `PGRST205` (table `public.binders` missing). No `DATABASE_URL` / management token, so the SQL file cannot be applied from this environment.
+
+**Attempt 2:** `GET /auth/v1/health` with apikey → 200 (GoTrue up). `POST /auth/v1/otp` → 400 `email_address_invalid` for a probe address (OTP still not a working signup path). `GET /auth/v1/authorize?provider=google` → 400 (Google provider not configured).
+
+Left in place: `supabase/migrations/20260815000000_init.sql`, SignInPanel, `/auth/callback`, `.env.local.example`, `docs/supabase-dashboard.md`. Policy-shape tests cover RLS text. **Live RLS (user A vs user B) unverified.** Continue with playground persistence.
 
 ## Unverified
 
@@ -51,3 +59,4 @@ _(none yet)_
 - **T3.8 / 4x3 insertion map:** not measured in Cloud. `LAYOUTS['4x3'].insertionMap` stays `null` (safe-split).
 - **T4.1 listMedia:** PersistenceAdapter gained `listMedia()` / BlobStore `list()` so the art box can show uploads. Bytes are copied on `putMedia` so later file mutations cannot touch the stored original.
 - **T4.4 PDF:** first page is the full artwork trim (so a 2×2 merge is 14 × 19 cm). Piece pages follow. Browser PNG is canvas-encoded without a pHYs chunk. Bleed toggle is shown; piece rasters already support bleed in `print.ts`, PDF pages currently mark trim.
+- **T5.1 storage policies:** folder-first `(storage.foldername(name))[1] = auth.uid()` instead of `owner = auth.uid()`, because Storage has not stamped `owner` yet on INSERT. Objects are stored at `{user_id}/{asset_id}`.
