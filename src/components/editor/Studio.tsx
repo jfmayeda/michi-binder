@@ -45,6 +45,9 @@ import {
 import type { Binder, Merge, Page, Placement, Transform } from '@/domain/types';
 import { useStudioStore } from '@/state/studioStore';
 import { SavedStamp } from '@/components/editor/SavedStamp';
+import { SavePrompt } from '@/components/auth/SavePrompt';
+import { useAuthSession } from '@/components/auth/useAuthSession';
+import { anonymousMayAddPage } from '@/persistence/playgroundBinder';
 
 function resequence(pages: Page[]): Page[] {
   return pages.map((p, i) => ({ ...p, position: i + 1 }));
@@ -97,6 +100,8 @@ export function Studio() {
   const [mode, setMode] = useState<RenderMode>('2d');
   const [mergeHint, setMergeHint] = useState<string | null>(null);
   const [exportMergeId, setExportMergeId] = useState<string | null>(null);
+  const [savePrompt, setSavePrompt] = useState(false);
+  const session = useAuthSession();
   const [crop, setCrop] = useState<{
     pageId: string;
     row: number;
@@ -136,6 +141,16 @@ export function Studio() {
   }, [retrySave]);
 
   useEffect(() => {
+    if (saveStatus === 'saved') return;
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [saveStatus]);
+
+  useEffect(() => {
     const end = () => {
       marqueeStart.current = null;
     };
@@ -159,8 +174,8 @@ export function Studio() {
     return (
       <main className="p-8">
         <p className="text-ink-soft">That binder isn’t on this shelf.</p>
-        <button type="button" className="mt-3 text-accent" onClick={() => router.push('/shelf')}>
-          Back to the shelf
+        <button type="button" className="mt-3 text-accent" onClick={() => router.push('/')}>
+          Back to the landing desk
         </button>
       </main>
     );
@@ -487,8 +502,12 @@ export function Studio() {
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
             <div>
-              <button type="button" className="text-sm text-accent" onClick={() => router.push('/shelf')}>
-                ← Shelf
+              <button
+                type="button"
+                className="text-sm text-accent"
+                onClick={() => router.push(session === 'user' ? '/shelf' : '/')}
+              >
+                ← {session === 'user' ? 'Shelf' : 'Landing'}
               </button>
               <h1 className="font-display text-2xl text-ink">{binder.title}</h1>
               <div className="mt-1">
@@ -529,7 +548,11 @@ export function Studio() {
               <button
                 type="button"
                 className="rounded-md bg-paper-sun px-3 py-1.5 text-sm shadow-stamp"
-                onClick={() =>
+                onClick={() => {
+                  if (session !== 'user' && !anonymousMayAddPage(binder.pages.length)) {
+                    setSavePrompt(true);
+                    return;
+                  }
                   persist({
                     ...binder,
                     pages: [
@@ -540,8 +563,8 @@ export function Studio() {
                         position: binder.pages.length + 1,
                       },
                     ],
-                  })
-                }
+                  });
+                }}
               >
                 Add page
               </button>
@@ -774,6 +797,7 @@ export function Studio() {
               );
             })()
           : null}
+        {savePrompt ? <SavePrompt onDismiss={() => setSavePrompt(false)} /> : null}
         {host}
       </main>
     </DndContext>

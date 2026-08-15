@@ -46,6 +46,10 @@ Migrations and Auth UI are in the repo. Live AC did not pass after two honest at
 
 Left in place: `supabase/migrations/20260815000000_init.sql`, SignInPanel, `/auth/callback`, `.env.local.example`, `docs/supabase-dashboard.md`. Policy-shape tests cover RLS text. **Live RLS (user A vs user B) unverified.** Continue with playground persistence.
 
+### T5.3 live signup migration (2026-08-15)
+
+AT-10 unit tests pass against memory Storage. Live signup cannot run (T5.1 auth BLOCKED). Shelf now requires a real session in every build, so Cloud testers use `/playground` instead of `/shelf`. Anonymous second-page attempts open the save prompt instead of adding a page.
+
 ## Unverified
 
 - Gate 1 physical “does it feel like paper on Jacob’s machine / 60 fps” — Chrome in Cloud looked smooth; no DevTools performance profile attached.
