@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import type { Binder, Merge, Placement } from '@/domain/types';
 import { printPlan } from '@/domain/print';
 import { buildArtPdf, dpiWarning } from '@/export/artPdf';
+import { buildCalibrationPdf } from '@/export/calibration';
 
 export function ExportDialog({
   binder,
@@ -96,8 +97,22 @@ export function ExportDialog({
           >
             Download PNG
           </button>
-          <button type="button" className="px-3 py-1.5 text-sm text-ink-soft" onClick={onClose}>
-            Close
+          <button
+            type="button"
+            className="rounded-md bg-paper-sun px-3 py-1.5 text-sm shadow-stamp"
+            onClick={() => {
+              void buildCalibrationPdf().then((bytes) => {
+                const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'michi-calibration.pdf';
+                a.click();
+                URL.revokeObjectURL(url);
+              });
+            }}
+          >
+            Calibration sheet
           </button>
         </div>
         <p className="mt-3 text-xs text-ink-faint">Print at 100% / actual size. Disable fit-to-page.</p>

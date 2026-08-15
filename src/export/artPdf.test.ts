@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { PDFDocument } from 'pdf-lib';
 import { addMerge, createBinder, placeOnMerge, placementFromUpload } from '@/domain/slots';
 import { cmToPt } from '@/domain/print';
@@ -44,6 +45,12 @@ describe('T4.4 art export', () => {
     const trim = pdf.getPage(0).getTrimBox();
     expect(Math.abs(trim.width - cmToPt(14))).toBeLessThan(0.01);
     expect(Math.abs(trim.height - cmToPt(19))).toBeLessThan(0.01);
+    try {
+      mkdirSync('/opt/cursor/artifacts', { recursive: true });
+      writeFileSync('/opt/cursor/artifacts/michi_export_2x2.pdf', bytes);
+    } catch {
+      /* optional */
+    }
   });
 
   it('whole-strip variant changes page count', async () => {

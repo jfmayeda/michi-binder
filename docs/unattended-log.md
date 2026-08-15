@@ -30,6 +30,10 @@ Cloud is Linux/Chrome. **Safari unverified.**
 
 Did not stop. `/dev/color-check` on base1: Squirtle/Blastoise land in Blue; Charmander/Charizard in Orange/Red; Pikachu in Yellow. A few frame-color misses (Chansey/Clefairy in Blue, Staryu in Yellow) — overall sane enough to authorize the T5.6 full-catalog run. 4x3 insertion map still unverified; safe-split default stands.
 
+### Gate 3 — print + ruler (2026-08-15, unattended)
+
+Generated calibration PDF (10 cm rulers + 7 × 9.5 cm pocket trim page) and art export PDFs with exact-cm TrimBox. Cannot physically print. **Needs Jacob ruler check.**
+
 ## BLOCKED
 
 _(none yet)_
