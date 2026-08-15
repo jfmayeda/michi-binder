@@ -12,6 +12,7 @@ import {
 import type { LoadedCatalog } from '@/search/query';
 import { VirtualGrid } from '@/components/shared/VirtualGrid';
 import { CardThumb } from './CardThumb';
+import themeCollections from '@/templates/theme-collections.json';
 
 function Field({
   label,
@@ -46,6 +47,7 @@ export function SearchPanel({
   const [query, setQuery] = useState<SearchQuery>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready'>('idle');
+  const [tab, setTab] = useState<'search' | 'vibe'>('search');
 
   const load = useCallback(async () => {
     if (catalog) return catalog;
@@ -91,8 +93,86 @@ export function SearchPanel({
             Card box
           </p>
           {compact ? null : <h2 className="font-display text-2xl text-ink">Search the catalog</h2>}
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              className={`rounded-md px-2.5 py-1 text-xs shadow-stamp ${tab === 'search' ? 'bg-accent text-paper-sun' : 'bg-paper-sun text-ink border border-rule'}`}
+              onClick={() => setTab('search')}
+            >
+              Search
+            </button>
+            <button
+              type="button"
+              className={`rounded-md px-2.5 py-1 text-xs shadow-stamp ${tab === 'vibe' ? 'bg-accent text-paper-sun' : 'bg-paper-sun text-ink border border-rule'}`}
+              onClick={() => {
+                setTab('vibe');
+                beginSearch();
+              }}
+            >
+              Vibe
+            </button>
+          </div>
         </header>
 
+        {tab === 'vibe' ? (
+          <div className="flex flex-col gap-3">
+            <p className="font-display text-xs tracking-wide text-ink-soft uppercase">Color</p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { name: 'Pink', hue: 330, color: '#e89bb8' },
+                { name: 'Blue', hue: 210, color: '#6ba4d9' },
+                { name: 'Yellow', hue: 52, color: '#f4d03f' },
+                { name: 'Green', hue: 140, color: '#7dbf8a' },
+                { name: 'Orange', hue: 28, color: '#e07a3d' },
+                { name: 'Purple', hue: 280, color: '#9b7bb8' },
+              ].map((swatch) => (
+                <button
+                  key={swatch.name}
+                  type="button"
+                  onClick={() => {
+                    beginSearch();
+                    setQuery((q) => ({ ...q, hueDeg: swatch.hue, text: undefined }));
+                    setText('');
+                  }}
+                  className="flex items-center gap-2 rounded-md border border-rule bg-paper-sun px-2 py-1 text-xs text-ink shadow-stamp"
+                >
+                  <span
+                    className="inline-block h-4 w-4 rounded-sm border border-rule"
+                    style={{ backgroundColor: swatch.color }}
+                  />
+                  {swatch.name}
+                </button>
+              ))}
+            </div>
+            <p className="font-display text-xs tracking-wide text-ink-soft uppercase">Themes</p>
+            <ul className="grid gap-2">
+              {themeCollections.collections.map((collection) => (
+                <li key={collection.id} className="rounded-md border border-rule bg-paper-sun p-2 shadow-stamp">
+                  <p className="font-display text-sm text-ink">{collection.name}</p>
+                  <p className="text-xs text-ink-soft">{collection.description}</p>
+                  <button
+                    type="button"
+                    className="mt-1 text-xs text-accent"
+                    onClick={() => {
+                      beginSearch();
+                      setTab('search');
+                      setText(collection.searchText);
+                    }}
+                  >
+                    Open in search
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-ink-faint">
+              Species and artist filters on the Search tab are the vibe entry points into the
+              ordinary box.
+            </p>
+          </div>
+        ) : null}
+
+        {tab === 'search' ? (
+        <>
         <div className={`grid gap-3 ${compact ? '' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
           <Field label="Name or artist">
             <input
@@ -214,6 +294,8 @@ export function SearchPanel({
             </select>
           </Field>
         </div>
+        </>
+        ) : null}
 
         {error ? <p className="text-sm text-accent-ink">{error}</p> : null}
 

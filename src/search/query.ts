@@ -1,12 +1,15 @@
 import MiniSearch from 'minisearch';
 import { cardImageUrl } from './images';
 import type { CardHit, CardIndex, ImageExceptions, SearchQuery, SetInfo } from './types';
+import type { ColorSwatch } from './vibe';
+import { cardHueScore } from './vibe';
 
 export type LoadedCatalog = {
   index: CardIndex;
   sets: SetInfo[];
   dexSpecies: Record<string, string>;
   exceptions: ImageExceptions;
+  colors: Record<string, ColorSwatch[]>;
   mini: MiniSearch;
 };
 
@@ -62,6 +65,22 @@ export function searchCatalog(
   }
 
   const hits: CardHit[] = [];
+  if (query.hueDeg != null) {
+    const scored: { hit: CardHit; score: number }[] = [];
+    for (const i of candidates) {
+      if (query.setId && index.setId[i] !== query.setId) continue;
+      if (query.speciesDex != null && index.dex[i] !== query.speciesDex) continue;
+      if (query.type && !index.types[i].includes(query.type)) continue;
+      if (query.artist && index.artist[i] !== query.artist) continue;
+      if (query.rarity && index.rarity[i] !== query.rarity) continue;
+      if (query.era && index.era[i] !== query.era) continue;
+      const score = cardHueScore(catalog.colors[index.id[i]], query.hueDeg);
+      if (score == null) continue;
+      scored.push({ hit: hitAt(catalog, i), score });
+    }
+    scored.sort((a, b) => a.score - b.score);
+    return scored.slice(0, limit).map((s) => s.hit);
+  }
   for (const i of candidates) {
     if (query.setId && index.setId[i] !== query.setId) continue;
     if (query.speciesDex != null && index.dex[i] !== query.speciesDex) continue;

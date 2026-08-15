@@ -46,17 +46,22 @@ async function fetchJson<T>(url: string, fetcher: typeof fetch): Promise<T> {
 export async function ensureCatalog(fetcher: typeof fetch = fetch): Promise<LoadedCatalog> {
   if (!catalogPromise) {
     catalogPromise = (async () => {
-      const [index, sets, dexSpecies, exceptions] = await Promise.all([
+      const [index, sets, dexSpecies, exceptions, colorsFile] = await Promise.all([
         fetchJson<CardIndex>(INDEX_URL, fetcher),
         fetchJson<SetInfo[]>('/data/sets.json', fetcher),
         fetchJson<Record<string, string>>('/data/dex-species.json', fetcher),
         fetchJson<ImageExceptions>('/data/image-exceptions.json', fetcher),
+        fetchJson<{ cards?: Record<string, { hex: string; weight: number }[]> }>(
+          '/data/colors.json',
+          fetcher,
+        ).catch(() => ({ cards: {} })),
       ]);
       return {
         index,
         sets,
         dexSpecies,
         exceptions,
+        colors: colorsFile.cards ?? {},
         mini: buildMiniSearch(index),
       };
     })();

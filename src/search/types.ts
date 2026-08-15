@@ -27,6 +27,7 @@ export type SearchQuery = {
   artist?: string;
   rarity?: string;
   era?: string;
+  hueDeg?: number;
 };
 
 export type CardHit = {

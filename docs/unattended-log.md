@@ -67,3 +67,4 @@ AT-10 unit tests pass against memory Storage. Live signup cannot run (T5.1 auth 
 - **T5.2 live AT-3:** no `public.binders` table and no working auth, so AT-3 runs against an in-memory stand-in of the same row/storage shape. Live Supabase autosave + network-kill unverified. Playground remains the running adapter.
 - **T5.4 clone:** anonymous clone copies the **right-hand page** of the current starter spread into the one-page playground. Cross-page merges on that page are dropped.
 - **T5.5 share:** beauty shot is 1080×1350 of the visible page (right page in double mode), cards loaded through `/api/card-image`. Browsing still hotlinks.
+- **T5.6 colors:** full-catalog extract wrote 20392 / 20444 cards to `public/data/colors.json` (2.9 MB) in ~51s. 52 images skipped (fetch failures).

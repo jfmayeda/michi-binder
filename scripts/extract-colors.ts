@@ -1,7 +1,7 @@
 /**
- * Extract dominant colors for ONE set (default base1). Full catalog is T5.6 / Gate 2.
+ * Extract dominant colors. Default: one set (base1). Pass `all` for the full catalog (T5.6).
  *
- *   node --experimental-strip-types scripts/extract-colors.ts [setId]
+ *   node --experimental-strip-types scripts/extract-colors.ts [setId|all]
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -10,6 +10,8 @@ import sharp from 'sharp';
 
 const ROOT = join(import.meta.dirname, '..');
 const SET_ID = process.argv[2] ?? 'base1';
+const ALL = SET_ID === 'all';
+const CONCURRENCY = 12;
 const SIZE = 64;
 const K = 4;
 
@@ -152,7 +154,7 @@ async function main() {
 
   const cards: { id: string; url: string }[] = [];
   for (let i = 0; i < index.id.length; i += 1) {
-    if (index.setId[i] !== SET_ID) continue;
+    if (!ALL && index.setId[i] !== SET_ID) continue;
     cards.push({
       id: index.id[i],
       url: exceptions[index.id[i]]?.small ?? derivedSmall(index.setId[i], index.number[i]),
@@ -160,22 +162,44 @@ async function main() {
   }
   if (cards.length === 0) throw new Error(`No cards for set ${SET_ID}`);
 
-  const out: Record<string, Swatch[]> = {};
-  let i = 0;
-  for (const card of cards) {
-    i += 1;
-    const res = await fetch(card.url);
-    if (!res.ok) {
-      console.warn(`skip ${card.id} ${res.status}`);
-      continue;
-    }
-    const buf = Buffer.from(await res.arrayBuffer());
-    out[card.id] = await colorsForImage(buf);
-    if (i % 10 === 0) console.log(`${i}/${cards.length}`);
+  const path = join(ROOT, 'public/data/colors.json');
+  let out: Record<string, Swatch[]> = {};
+  try {
+    const prev = JSON.parse(readFileSync(path, 'utf8')) as { cards?: Record<string, Swatch[]> };
+    if (prev.cards) out = { ...prev.cards };
+  } catch {
+    out = {};
   }
 
-  const path = join(ROOT, 'public/data/colors.json');
-  writeFileSync(path, `${JSON.stringify({ setId: SET_ID, cards: out })}\n`);
+  const pending = cards.filter((c) => !out[c.id]);
+  console.log(`extract ${pending.length} remaining of ${cards.length}`);
+
+  let done = cards.length - pending.length;
+  let cursor = 0;
+  async function worker() {
+    while (cursor < pending.length) {
+      const current = pending[cursor];
+      cursor += 1;
+      try {
+        const res = await fetch(current.url);
+        if (!res.ok) {
+          console.warn(`skip ${current.id} ${res.status}`);
+        } else {
+          const buf = Buffer.from(await res.arrayBuffer());
+          out[current.id] = await colorsForImage(buf);
+        }
+      } catch (err) {
+        console.warn(`skip ${current.id}`, err instanceof Error ? err.message : err);
+      }
+      done += 1;
+      if (done % 200 === 0 || done === cards.length) {
+        console.log(`${done}/${cards.length}`);
+        writeFileSync(path, `${JSON.stringify({ setId: ALL ? 'all' : SET_ID, cards: out })}\n`);
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+  writeFileSync(path, `${JSON.stringify({ setId: ALL ? 'all' : SET_ID, cards: out })}\n`);
   console.log(`wrote ${Object.keys(out).length} cards to public/data/colors.json`);
 }
 

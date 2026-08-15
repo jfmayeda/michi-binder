@@ -1,0 +1,20 @@
+{
+  "collections": [
+    {
+      "id": "pink-picnic",
+      "name": "Pink picnic (draft)",
+      "description": "Soft pink friends for a scrapbook spread. Jacob will curate the rest.",
+      "cardIds": ["base2-54", "base2-16", "pgo-35"],
+      "examplePage": "pink-friends",
+      "searchText": "Jigglypuff"
+    },
+    {
+      "id": "kanto-fire",
+      "name": "Kanto fire (draft)",
+      "description": "The Charmander desk, draft example for the theme-collection format.",
+      "cardIds": ["base1-46", "base1-24", "base1-4"],
+      "examplePage": "kanto-starters",
+      "searchText": "Charmander"
+    }
+  ]
+}

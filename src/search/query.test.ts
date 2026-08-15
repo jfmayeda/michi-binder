@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildMiniSearch, searchCatalog, uniqueFacets } from './query';
+import { hexToHue, hueDistance } from './vibe';
 import type { CardIndex, ImageExceptions, SetInfo } from './types';
 
 const dataDir = join(process.cwd(), 'public', 'data');
@@ -15,11 +16,15 @@ function loadCatalog() {
   const exceptions = JSON.parse(
     readFileSync(join(dataDir, 'image-exceptions.json'), 'utf8'),
   ) as ImageExceptions;
+  const colorsFile = JSON.parse(
+    readFileSync(join(dataDir, 'colors.json'), 'utf8'),
+  ) as { cards?: Record<string, { hex: string; weight: number }[]> };
   return {
     index,
     sets,
     dexSpecies,
     exceptions,
+    colors: colorsFile.cards ?? {},
     mini: buildMiniSearch(index),
   };
 }
@@ -82,6 +87,19 @@ describe('search catalog', () => {
     searchCatalog(catalog, { text: 'Pikachu', type: 'Lightning' }, 80);
     const elapsed = performance.now() - start;
     expect(elapsed).toBeLessThan(50);
+  });
+
+  it('a pink swatch ranks predominantly pink cards across sets', () => {
+    const hits = searchCatalog(catalog, { hueDeg: 330 }, 20);
+    expect(hits.length).toBe(20);
+    const pinkish = hits.filter((h) => {
+      const top = catalog.colors[h.id]?.[0];
+      if (!top) return false;
+      return hueDistance(hexToHue(top.hex), 330) <= 55;
+    });
+    expect(pinkish.length).toBeGreaterThan(hits.length / 2);
+    const sets = new Set(hits.map((h) => h.setId));
+    expect(sets.size).toBeGreaterThan(1);
   });
 
   it('exposes facet lists', () => {
