@@ -1,10 +1,72 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useDraggable, useDroppable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
+import type { CSSProperties, ReactNode } from 'react';
 import { LAYOUTS } from '@/domain/layouts';
 import { cellsForMerge } from '@/domain/slots';
 import { assemblyAnnotation } from '@/domain/split';
-import type { Binder, Page } from '@/domain/types';
+import type { Binder, Page, Placement } from '@/domain/types';
+import { derivedCardImageUrl } from '@/search/images';
+
+function cardThumbUrl(cardId: string): string {
+  const dash = cardId.indexOf('-');
+  if (dash < 0) return derivedCardImageUrl(cardId, '1');
+  return derivedCardImageUrl(cardId.slice(0, dash), cardId.slice(dash + 1));
+}
+
+function DropCell({
+  id,
+  className,
+  style,
+  children,
+  onClick,
+}: {
+  id: string;
+  className: string;
+  style?: CSSProperties;
+  children: ReactNode;
+  onClick: () => void;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      role="button"
+      tabIndex={0}
+      style={style}
+      onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+      className={`${className} ${isOver ? 'ring-2 ring-accent' : ''}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function DragFill({ placement, children }: { placement: Placement; children: ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: `slot:${placement.id}`,
+    data: { kind: 'placement' as const, placement },
+  });
+  const style = transform ? { transform: CSS.Translate.toString(transform) } : undefined;
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`h-full ${isDragging ? 'opacity-60' : ''}`}
+      {...listeners}
+      {...attributes}
+    >
+      {children}
+    </div>
+  );
+}
 
 export function SlotGrid({
   binder,
@@ -39,7 +101,9 @@ export function SlotGrid({
       rowSpan: 1 + Math.max(...onThis.map((c) => c.row)) - Math.min(...onThis.map((c) => c.row)),
     });
     for (const c of onThis) {
-      if (c.row !== origin.row || c.col !== origin.col) occupied.set(`${c.row}:${c.col}`, { colSpan: 0, rowSpan: 0 });
+      if (c.row !== origin.row || c.col !== origin.col) {
+        occupied.set(`${c.row}:${c.col}`, { colSpan: 0, rowSpan: 0 });
+      }
     }
   }
 
@@ -59,21 +123,16 @@ export function SlotGrid({
         ? { gridColumn: `span ${block.colSpan}`, gridRow: `span ${block.rowSpan}` }
         : undefined;
       const selectedCell = selected.has(key);
-      items.push(
-        <button
-          key={key}
-          type="button"
-          style={spanStyle}
-          onClick={() => {
-            if (onPlace) onPlace(r, c);
-            else onToggle(r, c);
-          }}
-          className={`relative min-h-16 rounded-sm border text-left text-[0.65rem] ${
-            selectedCell ? 'border-accent bg-accent-soft' : 'border-rule bg-paper-sun/80'
-          }`}
-        >
-          {placement?.kind === 'card' ? (
-            <span className="block p-1 font-display text-ink">{placement.cardId}</span>
+      const body = (
+        <>
+          {placement?.kind === 'card' && placement.cardId ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={cardThumbUrl(placement.cardId)}
+              alt=""
+              className="h-full w-full object-cover"
+              draggable={false}
+            />
           ) : placement?.kind === 'art' ? (
             <span className="block p-1 text-ink-soft">art</span>
           ) : (
@@ -90,16 +149,38 @@ export function SlotGrid({
             <span
               role="button"
               tabIndex={0}
-              className="absolute top-1 right-1 text-accent-ink"
+              className="absolute top-1 right-1 z-10 rounded-sm bg-paper/90 px-1 text-accent-ink"
               onClick={(e) => {
                 e.stopPropagation();
                 onRemove(placement.id);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.stopPropagation();
+                  onRemove(placement.id);
+                }
               }}
             >
               ×
             </span>
           ) : null}
-        </button>,
+        </>
+      );
+      items.push(
+        <DropCell
+          key={key}
+          id={`${page.id}:${r}:${c}`}
+          style={spanStyle}
+          onClick={() => {
+            if (onPlace) onPlace(r, c);
+            else onToggle(r, c);
+          }}
+          className={`relative min-h-16 overflow-hidden rounded-sm border text-left text-[0.65rem] ${
+            selectedCell ? 'border-accent bg-accent-soft' : 'border-rule bg-paper-sun/80'
+          }`}
+        >
+          {placement ? <DragFill placement={placement}>{body}</DragFill> : body}
+        </DropCell>,
       );
     }
   }
@@ -116,4 +197,3 @@ export function SlotGrid({
     </div>
   );
 }
-

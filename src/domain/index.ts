@@ -7,6 +7,11 @@ export {
   validateMerge,
   switchPageMode,
   cellsForMerge,
+  placeOnMerge,
+  placeIntoCell,
+  placementFromCard,
+  removePlacement,
+  placementAt,
 } from './slots';
 export { computeSplit, assemblyAnnotation } from './split';
 export { serializeBinder, deserializeBinder } from './serialize';

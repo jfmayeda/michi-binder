@@ -38,3 +38,7 @@ _(none yet)_
 
 - Gate 1 physical “does it feel like paper on Jacob’s machine / 60 fps” — Chrome in Cloud looked smooth; no DevTools performance profile attached.
 - Safari backface-visibility.
+
+## Assumptions (continued)
+
+- **T3.5 single-page chrome:** binders in `pageMode: 'single'` show one leaf (no spine), using existing binder tokens. Double mode keeps the facing-spread book from T3.4. Drop targets are per-cell droppables (grid-snapped); no extra snap-to-grid library.

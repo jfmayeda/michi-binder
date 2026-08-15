@@ -176,3 +176,86 @@ export function createBinder(opts: {
 export function placeOnMerge(binder: Binder, placement: Placement): Binder {
   return { ...binder, placements: [...binder.placements, placement] };
 }
+
+function cellMerge(binder: Binder, pageId: string, row: number, col: number): Merge | undefined {
+  for (const merge of binder.merges) {
+    const cells = cellsForMerge(binder, merge);
+    if ('error' in cells) continue;
+    if (cells.some((c) => c.pageId === pageId && c.row === row && c.col === col)) return merge;
+  }
+  return undefined;
+}
+
+export function placementAt(binder: Binder, pageId: string, row: number, col: number): Placement | undefined {
+  const merge = cellMerge(binder, pageId, row, col);
+  if (merge) return binder.placements.find((p) => p.mergeId === merge.id);
+  return binder.placements.find((p) => p.pageId === pageId && p.row === row && p.col === col);
+}
+
+export function upsertPlacement(binder: Binder, placement: Placement): Binder {
+  const without = binder.placements.filter((p) => p.id !== placement.id);
+  return { ...binder, placements: [...without, placement] };
+}
+
+export function removePlacement(binder: Binder, placementId: string): Binder {
+  return { ...binder, placements: binder.placements.filter((p) => p.id !== placementId) };
+}
+
+export function placementFromCard(id: string, cardId: string): Placement {
+  return {
+    id,
+    pageId: '',
+    mergeId: null,
+    row: null,
+    col: null,
+    kind: 'card',
+    cardId,
+    assetKind: null,
+    uploadAssetId: null,
+    packItemId: null,
+    transform: {},
+    ownership: 'owned',
+  };
+}
+
+function hasOrigin(p: { mergeId: string | null; row: number | null; col: number | null }): boolean {
+  return Boolean(p.mergeId) || (p.row != null && p.col != null);
+}
+
+/** Place or swap a card/art into a cell (or its merge). Occupied dest swaps when incoming has an origin. */
+export function placeIntoCell(
+  binder: Binder,
+  pageId: string,
+  row: number,
+  col: number,
+  incoming: Placement,
+): Binder {
+  const merge = cellMerge(binder, pageId, row, col);
+  const existing = placementAt(binder, pageId, row, col);
+  const origin = {
+    pageId: incoming.pageId,
+    mergeId: incoming.mergeId,
+    row: incoming.row,
+    col: incoming.col,
+  };
+  const target: Placement = merge
+    ? { ...incoming, pageId: merge.pageId, mergeId: merge.id, row: null, col: null }
+    : { ...incoming, pageId, mergeId: null, row, col };
+  let next = removePlacement(binder, incoming.id);
+  if (existing && existing.id !== incoming.id) {
+    next = removePlacement(next, existing.id);
+    if (hasOrigin(origin)) {
+      const moved: Placement = origin.mergeId
+        ? { ...existing, mergeId: origin.mergeId, pageId: origin.pageId, row: null, col: null }
+        : {
+            ...existing,
+            mergeId: null,
+            pageId: origin.pageId,
+            row: origin.row,
+            col: origin.col,
+          };
+      next = upsertPlacement(next, moved);
+    }
+  }
+  return upsertPlacement(next, target);
+}

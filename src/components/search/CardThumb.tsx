@@ -14,8 +14,8 @@ export function CardThumb({
   onSelect: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: hit.id,
-    data: { card: hit },
+    id: `search:${hit.id}`,
+    data: { kind: 'search' as const, card: hit },
   });
   const style = transform ? { transform: CSS.Translate.toString(transform) } : undefined;
 

@@ -31,7 +31,15 @@ function Field({
 const selectClass =
   'rounded-md border border-rule bg-paper-sun px-2 py-1.5 text-sm text-ink shadow-stamp outline-none focus:border-accent';
 
-export function SearchPanel() {
+export function SearchPanel({
+  onSelectCard,
+  wrapDnd = true,
+  compact = false,
+}: {
+  onSelectCard?: (hit: CardHit) => void;
+  wrapDnd?: boolean;
+  compact?: boolean;
+}) {
   const [catalog, setCatalog] = useState<LoadedCatalog | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [text, setText] = useState('');
@@ -76,17 +84,16 @@ export function SearchPanel() {
     });
   };
 
-  return (
-    <DndContext>
+  const body = (
       <section className="flex h-full min-h-0 flex-col gap-4 bg-paper p-4 texture-paper">
         <header>
           <p className="font-display text-xs tracking-[0.2em] text-accent uppercase">
             Card box
           </p>
-          <h2 className="font-display text-2xl text-ink">Search the catalog</h2>
+          {compact ? null : <h2 className="font-display text-2xl text-ink">Search the catalog</h2>}
         </header>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={`grid gap-3 ${compact ? '' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
           <Field label="Name or artist">
             <input
               id="card-search-text"
@@ -223,20 +230,23 @@ export function SearchPanel() {
         {hits.length > 0 ? (
           <VirtualGrid
             items={hits}
-            columnCount={4}
-            rowHeight={210}
-            height={520}
+            columnCount={compact ? 2 : 4}
+            rowHeight={compact ? 168 : 210}
+            height={compact ? 280 : 520}
             getKey={(hit) => hit.id}
             renderItem={(hit) => (
               <CardThumb
                 hit={hit}
                 selected={selectedId === hit.id}
-                onSelect={() => setSelectedId(hit.id)}
+                onSelect={() => {
+                  setSelectedId(hit.id);
+                  onSelectCard?.(hit);
+                }}
               />
             )}
           />
         ) : null}
       </section>
-    </DndContext>
   );
+  return wrapDnd ? <DndContext>{body}</DndContext> : body;
 }
