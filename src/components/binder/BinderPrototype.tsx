@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { markBinderInteractive } from '@/search';
 import { Binder2D } from './Binder2D';
 import { FlipBinder } from './FlipBinder';
 import {
@@ -31,6 +32,10 @@ export function BinderPrototype() {
     setMode('3d');
     setReason('auto');
   }, []);
+
+  useEffect(() => {
+    if (mode) markBinderInteractive();
+  }, [mode]);
 
   const choose = (next: RenderMode, why: string) => {
     setMode(next);
