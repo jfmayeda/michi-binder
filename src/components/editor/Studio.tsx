@@ -33,6 +33,7 @@ import type { CardHit } from '@/search';
 import '@/components/binder/binder.css';
 import { SlotGrid } from '@/components/editor/SlotGrid';
 import { CropEditor } from '@/components/editor/CropEditor';
+import { ExportDialog } from '@/components/editor/ExportDialog';
 import { useConfirmWithUndo } from '@/components/editor/ConfirmWithUndoToast';
 import {
   persistRenderMode,
@@ -91,6 +92,7 @@ export function Studio() {
   const [pending, setPending] = useState<Pending | null>(null);
   const [mode, setMode] = useState<RenderMode>('2d');
   const [mergeHint, setMergeHint] = useState<string | null>(null);
+  const [exportMergeId, setExportMergeId] = useState<string | null>(null);
   const [crop, setCrop] = useState<{
     pageId: string;
     row: number;
@@ -381,6 +383,7 @@ export function Studio() {
         onPlace={(r, c) => onCellClick(page, r, c)}
         onRemove={(id) => persist(removePlacement(binder, id))}
         onUnmerge={requestUnmerge}
+        onExport={(mergeId) => setExportMergeId(mergeId)}
         onSelectPointerDown={(r, c, event) => onSelectPointerDown(page, r, c, event)}
         onSelectPointerEnter={(r, c, event) => onSelectPointerEnter(page, r, c, event)}
       />
@@ -641,6 +644,25 @@ export function Studio() {
             }}
           />
         ) : null}
+        {exportMergeId
+          ? (() => {
+              const merge = binder.merges.find((m) => m.id === exportMergeId);
+              const placement = binder.placements.find((p) => p.mergeId === exportMergeId);
+              if (!merge || !placement) return null;
+              const asset = placement.uploadAssetId
+                ? media.find((m) => m.id === placement.uploadAssetId)
+                : undefined;
+              return (
+                <ExportDialog
+                  binder={binder}
+                  merge={merge}
+                  placement={placement}
+                  sourcePx={asset?.widthPx ?? 0}
+                  onClose={() => setExportMergeId(null)}
+                />
+              );
+            })()
+          : null}
         {host}
       </main>
     </DndContext>

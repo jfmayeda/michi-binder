@@ -83,6 +83,7 @@ export function SlotGrid({
   onPlace,
   onRemove,
   onUnmerge,
+  onExport,
   onSelectPointerDown,
   onSelectPointerEnter,
 }: {
@@ -93,6 +94,7 @@ export function SlotGrid({
   onPlace?: (row: number, col: number) => void;
   onRemove?: (placementId: string) => void;
   onUnmerge?: (mergeId: string) => void;
+  onExport?: (mergeId: string) => void;
   onSelectPointerDown?: (row: number, col: number, event: PointerEvent) => void;
   onSelectPointerEnter?: (row: number, col: number, event: PointerEvent) => void;
 }) {
@@ -158,6 +160,19 @@ export function SlotGrid({
               <span className="rounded-sm bg-paper px-1 text-[0.55rem] text-accent">
                 {assemblyAnnotation(binder, merge)}
               </span>
+              {onExport && placement?.kind === 'art' ? (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  className="rounded-sm bg-paper px-1 text-[0.55rem] text-accent"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onExport(merge.id);
+                  }}
+                >
+                  print
+                </span>
+              ) : null}
               {onUnmerge ? (
                 <span
                   role="button"

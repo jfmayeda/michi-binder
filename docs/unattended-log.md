@@ -46,3 +46,4 @@ _(none yet)_
 - **T3.7 toast expiry:** `UNDO_TOAST_MS = 8000`. `useConfirmWithUndo` is the reserved API for the T3.8 mode switch.
 - **T3.8 / 4x3 insertion map:** not measured in Cloud. `LAYOUTS['4x3'].insertionMap` stays `null` (safe-split).
 - **T4.1 listMedia:** PersistenceAdapter gained `listMedia()` / BlobStore `list()` so the art box can show uploads. Bytes are copied on `putMedia` so later file mutations cannot touch the stored original.
+- **T4.4 PDF:** first page is the full artwork trim (so a 2×2 merge is 14 × 19 cm). Piece pages follow. Browser PNG is canvas-encoded without a pHYs chunk. Bleed toggle is shown; piece rasters already support bleed in `print.ts`, PDF pages currently mark trim.
