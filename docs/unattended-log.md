@@ -45,3 +45,4 @@ _(none yet)_
 - **T3.6 merge selection:** drag/shift-click fills the bounding rectangle (never blocks a shape). Overlap still rejected by domain validation. Filled unmerge uses an interim confirm + 8s undo toast until T3.7. Merging over existing cell cards adopts the first placement onto the merge.
 - **T3.7 toast expiry:** `UNDO_TOAST_MS = 8000`. `useConfirmWithUndo` is the reserved API for the T3.8 mode switch.
 - **T3.8 / 4x3 insertion map:** not measured in Cloud. `LAYOUTS['4x3'].insertionMap` stays `null` (safe-split).
+- **T4.1 listMedia:** PersistenceAdapter gained `listMedia()` / BlobStore `list()` so the art box can show uploads. Bytes are copied on `putMedia` so later file mutations cannot touch the stored original.

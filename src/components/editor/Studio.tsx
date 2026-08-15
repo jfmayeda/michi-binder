@@ -10,6 +10,8 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 import { SearchPanel } from '@/components/search/SearchPanel';
+import { MediaLibrary } from '@/components/editor/MediaLibrary';
+import type { MediaBlob } from '@/persistence/types';
 import {
   addMerge,
   adoptPlacementsIntoMerge,
@@ -19,6 +21,7 @@ import {
   placeIntoCell,
   placementAt,
   placementFromCard,
+  placementFromUpload,
   proposalFromSelection,
   removePlacement,
   switchPageMode,
@@ -54,7 +57,8 @@ function parseCellId(id: string): { pageId: string; row: number; col: number } |
 
 type Pending =
   | { source: 'search'; card: CardHit }
-  | { source: 'slot'; placement: Placement };
+  | { source: 'slot'; placement: Placement }
+  | { source: 'art'; asset: MediaBlob };
 
 const MERGE_ERRORS: Record<string, string> = {
   '1x1': 'Need at least two pockets to merge.',
@@ -264,6 +268,9 @@ export function Studio() {
     if (pending.source === 'search') {
       return placementFromCard(crypto.randomUUID(), pending.card.id);
     }
+    if (pending.source === 'art') {
+      return placementFromUpload(crypto.randomUUID(), pending.asset.id);
+    }
     return pending.placement;
   };
 
@@ -340,9 +347,11 @@ export function Studio() {
   const pendingLabel =
     pending?.source === 'search'
       ? pending.card.name
-      : pending?.source === 'slot'
-        ? pending.placement.cardId ?? 'that pocket'
-        : null;
+      : pending?.source === 'art'
+        ? pending.asset.fileName
+        : pending?.source === 'slot'
+          ? pending.placement.cardId ?? 'that pocket'
+          : null;
 
   return (
     <DndContext sensors={sensors} onDragEnd={onDragEnd}>
@@ -362,6 +371,7 @@ export function Studio() {
           )}
           <div className="min-h-0 flex-1 overflow-y-auto">
             <SearchPanel wrapDnd={false} compact onSelectCard={(card) => setPending({ source: 'search', card })} />
+            <MediaLibrary onSelect={(asset) => setPending({ source: 'art', asset })} />
           </div>
         </aside>
 

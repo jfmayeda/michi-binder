@@ -47,8 +47,12 @@ export class PlaygroundAdapter implements PersistenceAdapter {
     await this.write(snap);
   }
 
+  listMedia() {
+    return this.blobs.list();
+  }
+
   putMedia(blob: MediaBlob) {
-    return this.blobs.put(blob);
+    return this.blobs.put({ ...blob, bytes: blob.bytes.slice(0) });
   }
 
   getMedia(id: string) {

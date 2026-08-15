@@ -15,6 +15,7 @@ export {
   placeOnMerge,
   placeIntoCell,
   placementFromCard,
+  placementFromUpload,
   removePlacement,
   placementAt,
 } from './slots';

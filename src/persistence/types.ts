@@ -5,6 +5,9 @@ export type MediaBlob = {
   bytes: ArrayBuffer;
   mime: string;
   fileName: string;
+  widthPx: number;
+  heightPx: number;
+  sha256: string;
 };
 
 export interface PersistenceAdapter {
@@ -12,6 +15,7 @@ export interface PersistenceAdapter {
   getBinder(id: string): Promise<Binder | null>;
   saveBinder(binder: Binder): Promise<void>;
   deleteBinder(id: string): Promise<void>;
+  listMedia(): Promise<MediaBlob[]>;
   putMedia(blob: MediaBlob): Promise<void>;
   getMedia(id: string): Promise<MediaBlob | null>;
   deleteMedia(id: string): Promise<void>;
@@ -27,6 +31,7 @@ export type BlobStore = {
   put(blob: MediaBlob): Promise<void>;
   get(id: string): Promise<MediaBlob | null>;
   delete(id: string): Promise<void>;
+  list(): Promise<MediaBlob[]>;
 };
 
 export class MemoryKv implements KeyValueStore {
@@ -52,5 +57,8 @@ export class MemoryBlobs implements BlobStore {
   }
   async delete(id: string) {
     this.map.delete(id);
+  }
+  async list() {
+    return [...this.map.values()];
   }
 }

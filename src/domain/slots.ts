@@ -330,6 +330,23 @@ export function placementFromCard(id: string, cardId: string): Placement {
   };
 }
 
+export function placementFromUpload(id: string, uploadAssetId: string): Placement {
+  return {
+    id,
+    pageId: '',
+    mergeId: null,
+    row: null,
+    col: null,
+    kind: 'art',
+    cardId: null,
+    assetKind: 'upload',
+    uploadAssetId,
+    packItemId: null,
+    transform: {},
+    ownership: null,
+  };
+}
+
 function hasOrigin(p: { mergeId: string | null; row: number | null; col: number | null }): boolean {
   return Boolean(p.mergeId) || (p.row != null && p.col != null);
 }

@@ -41,4 +41,7 @@ export const idbBlobs: BlobStore = {
   async delete(id) {
     await (await db()).delete('originals', id);
   },
+  async list() {
+    return (await (await db()).getAll('originals')) ?? [];
+  },
 };

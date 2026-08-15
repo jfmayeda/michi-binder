@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LAYOUTS, type LayoutId } from '@/domain/layouts';
+import { sha256Hex } from '@/media/checksum';
 import { addMerge, createBinder, placeOnMerge } from '@/domain/slots';
 import type { Placement, Transform } from '@/domain/types';
 import { PlaygroundAdapter } from './playground';
@@ -81,9 +82,23 @@ describe('AT-3 via PlaygroundAdapter', () => {
 
   it('stores media bytes unchanged', async () => {
     const adapter = new PlaygroundAdapter(new MemoryKv(), new MemoryBlobs());
-    const bytes = new Uint8Array([1, 2, 3, 9, 8, 7]).buffer;
-    await adapter.putMedia({ id: 'm1', bytes, mime: 'image/png', fileName: 'a.png' });
+    const fileBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 1, 2, 3]);
+    const sha = await sha256Hex(fileBytes.buffer);
+    await adapter.putMedia({
+      id: 'm1',
+      bytes: fileBytes.buffer,
+      mime: 'image/png',
+      fileName: 'a.png',
+      widthPx: 1,
+      heightPx: 1,
+      sha256: sha,
+    });
+    fileBytes[0] = 0;
     const got = await adapter.getMedia('m1');
-    expect(new Uint8Array(got!.bytes)).toEqual(new Uint8Array(bytes));
+    expect(got).not.toBeNull();
+    expect(new Uint8Array(got!.bytes)[0]).toBe(137);
+    expect(await sha256Hex(got!.bytes)).toBe(sha);
+    expect(got!.sha256).toBe(sha);
+    expect((await adapter.listMedia()).map((m) => m.id)).toEqual(['m1']);
   });
 });
