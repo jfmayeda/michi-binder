@@ -21,4 +21,5 @@ export {
   slotSize,
 } from './slots';
 export { coverCrop, slotAspect, cropPixelAspect, clampCrop, panCrop, zoomCrop, cropBoxAspect } from './crop';
+export { printPlan, cmToPx, cmToPt, annotationFor } from './print';
 export { serializeBinder, deserializeBinder } from './serialize';

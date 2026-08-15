@@ -33,7 +33,7 @@ function splitStrip(layout: ReturnType<typeof layoutOf>, strip: Piece): { pieces
       colSpan: bounds[b + 1] - bounds[b],
     });
   }
-  return { pieces, variant: strip };
+  return { pieces, variant: layout.insertionMap ? strip : null };
 }
 
 function layoutOf(binder: Binder) {
