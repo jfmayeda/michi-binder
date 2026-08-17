@@ -1,0 +1,26 @@
+{
+  "packs": [
+    {
+      "id": "linen-scraps",
+      "title": "Linen scraps",
+      "items": [
+        { "id": "linen-scraps/warm-wash", "file": "/art-packs/linen-scraps/warm-wash.svg", "title": "Warm wash" },
+        { "id": "linen-scraps/grain", "file": "/art-packs/linen-scraps/grain.svg", "title": "Paper grain" }
+      ]
+    },
+    {
+      "id": "pressed-leaves",
+      "title": "Pressed leaves",
+      "items": [
+        { "id": "pressed-leaves/fern", "file": "/art-packs/pressed-leaves/fern.svg", "title": "Fern" }
+      ]
+    },
+    {
+      "id": "vintage-ephemera",
+      "title": "Vintage ephemera",
+      "items": [
+        { "id": "vintage-ephemera/stamp-frame", "file": "/art-packs/vintage-ephemera/stamp-frame.svg", "title": "Stamp frame" }
+      ]
+    }
+  ]
+}

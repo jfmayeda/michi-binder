@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "kind": "page-template",
+  "id": "eevee-desk",
+  "title": "Eevee corner (draft)",
+  "draft": true,
+  "notes": "Draft page template — Jacob will replace.",
+  "layoutId": "3x3",
+  "pageMode": "single",
+  "pages": [
+    {
+      "id": "eevee-desk-p1",
+      "position": 1
+    }
+  ],
+  "merges": [
+    {
+      "id": "eevee-desk-m",
+      "pageId": "eevee-desk-p1",
+      "row": 0,
+      "col": 0,
+      "rowSpan": 1,
+      "colSpan": 3,
+      "spansGutter": false
+    }
+  ],
+  "placements": [
+    {
+      "id": "eevee-desk-mp",
+      "pageId": "eevee-desk-p1",
+      "mergeId": "eevee-desk-m",
+      "row": null,
+      "col": null,
+      "kind": "card",
+      "cardId": "base2-51",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "wanted",
+      "card": {
+        "card_id": "base2-51",
+        "name": "Eevee",
+        "set": "base2",
+        "number": "51",
+        "imageUrl": "https://images.pokemontcg.io/base2/51.png"
+      }
+    },
+    {
+      "id": "eevee-desk-pl0",
+      "pageId": "eevee-desk-p1",
+      "mergeId": null,
+      "row": 1,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base2-19",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base2-19",
+        "name": "Flareon",
+        "set": "base2",
+        "number": "19",
+        "imageUrl": "https://images.pokemontcg.io/base2/19.png"
+      }
+    },
+    {
+      "id": "eevee-desk-pl1",
+      "pageId": "eevee-desk-p1",
+      "mergeId": null,
+      "row": 1,
+      "col": 2,
+      "kind": "card",
+      "cardId": "base2-12",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base2-12",
+        "name": "Vaporeon",
+        "set": "base2",
+        "number": "12",
+        "imageUrl": "https://images.pokemontcg.io/base2/12.png"
+      }
+    },
+    {
+      "id": "eevee-desk-pl2",
+      "pageId": "eevee-desk-p1",
+      "mergeId": null,
+      "row": 2,
+      "col": 1,
+      "kind": "card",
+      "cardId": "base2-20",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base2-20",
+        "name": "Jolteon",
+        "set": "base2",
+        "number": "20",
+        "imageUrl": "https://images.pokemontcg.io/base2/20.png"
+      }
+    }
+  ]
+}

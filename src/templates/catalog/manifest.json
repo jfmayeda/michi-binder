@@ -1,0 +1,41 @@
+{
+  "starterId": "starter-binder",
+  "templates": [
+    {
+      "id": "starter-binder",
+      "title": "First scrapbook (draft)",
+      "kind": "starter-binder",
+      "draft": true
+    },
+    {
+      "id": "kanto-starters",
+      "title": "Kanto desk (draft)",
+      "kind": "page-template",
+      "draft": true
+    },
+    {
+      "id": "eevee-desk",
+      "title": "Eevee corner (draft)",
+      "kind": "page-template",
+      "draft": true
+    },
+    {
+      "id": "pink-friends",
+      "title": "Pink friends (draft)",
+      "kind": "page-template",
+      "draft": true
+    },
+    {
+      "id": "legend-box",
+      "title": "Legend box (draft)",
+      "kind": "page-template",
+      "draft": true
+    },
+    {
+      "id": "gengar-night",
+      "title": "Gengar night (draft)",
+      "kind": "page-template",
+      "draft": true
+    }
+  ]
+}

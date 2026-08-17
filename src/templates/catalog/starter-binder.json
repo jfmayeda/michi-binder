@@ -1,0 +1,502 @@
+{
+  "version": 1,
+  "kind": "starter-binder",
+  "id": "starter-binder",
+  "title": "First scrapbook (draft)",
+  "draft": true,
+  "notes": "Draft starter binder — Jacob will curate these spreads.",
+  "layoutId": "3x3",
+  "pageMode": "double",
+  "pages": [
+    {
+      "id": "starter-p1",
+      "position": 1
+    },
+    {
+      "id": "starter-p2",
+      "position": 2
+    },
+    {
+      "id": "starter-p3",
+      "position": 3
+    },
+    {
+      "id": "starter-p4",
+      "position": 4
+    },
+    {
+      "id": "starter-p5",
+      "position": 5
+    },
+    {
+      "id": "starter-p6",
+      "position": 6
+    },
+    {
+      "id": "starter-p7",
+      "position": 7
+    },
+    {
+      "id": "starter-p8",
+      "position": 8
+    },
+    {
+      "id": "starter-p9",
+      "position": 9
+    }
+  ],
+  "merges": [
+    {
+      "id": "starter-m1",
+      "pageId": "starter-p3",
+      "row": 0,
+      "col": 0,
+      "rowSpan": 2,
+      "colSpan": 2,
+      "spansGutter": false
+    }
+  ],
+  "placements": [
+    {
+      "id": "pl-1",
+      "pageId": "starter-p1",
+      "mergeId": null,
+      "row": 0,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base1-58",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base1-58",
+        "name": "Pikachu",
+        "set": "base1",
+        "number": "58",
+        "imageUrl": "https://images.pokemontcg.io/base1/58.png"
+      }
+    },
+    {
+      "id": "pl-2",
+      "pageId": "starter-p1",
+      "mergeId": null,
+      "row": 0,
+      "col": 1,
+      "kind": "card",
+      "cardId": "base1-46",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base1-46",
+        "name": "Charmander",
+        "set": "base1",
+        "number": "46",
+        "imageUrl": "https://images.pokemontcg.io/base1/46.png"
+      }
+    },
+    {
+      "id": "pl-3",
+      "pageId": "starter-p1",
+      "mergeId": null,
+      "row": 1,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base1-63",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base1-63",
+        "name": "Squirtle",
+        "set": "base1",
+        "number": "63",
+        "imageUrl": "https://images.pokemontcg.io/base1/63.png"
+      }
+    },
+    {
+      "id": "pl-4",
+      "pageId": "starter-p2",
+      "mergeId": null,
+      "row": 0,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base1-44",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base1-44",
+        "name": "Bulbasaur",
+        "set": "base1",
+        "number": "44",
+        "imageUrl": "https://images.pokemontcg.io/base1/44.png"
+      }
+    },
+    {
+      "id": "pl-5",
+      "pageId": "starter-p2",
+      "mergeId": null,
+      "row": 0,
+      "col": 1,
+      "kind": "card",
+      "cardId": "base1-30",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base1-30",
+        "name": "Ivysaur",
+        "set": "base1",
+        "number": "30",
+        "imageUrl": "https://images.pokemontcg.io/base1/30.png"
+      }
+    },
+    {
+      "id": "pl-6",
+      "pageId": "starter-p2",
+      "mergeId": null,
+      "row": 0,
+      "col": 2,
+      "kind": "card",
+      "cardId": "base1-15",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base1-15",
+        "name": "Venusaur",
+        "set": "base1",
+        "number": "15",
+        "imageUrl": "https://images.pokemontcg.io/base1/15.png"
+      }
+    },
+    {
+      "id": "pl-7",
+      "pageId": "starter-p3",
+      "mergeId": "starter-m1",
+      "row": null,
+      "col": null,
+      "kind": "card",
+      "cardId": "base1-4",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "wanted",
+      "card": {
+        "card_id": "base1-4",
+        "name": "Charizard",
+        "set": "base1",
+        "number": "4",
+        "imageUrl": "https://images.pokemontcg.io/base1/4.png"
+      }
+    },
+    {
+      "id": "pl-8",
+      "pageId": "starter-p3",
+      "mergeId": null,
+      "row": 0,
+      "col": 2,
+      "kind": "card",
+      "cardId": "base1-24",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base1-24",
+        "name": "Charmeleon",
+        "set": "base1",
+        "number": "24",
+        "imageUrl": "https://images.pokemontcg.io/base1/24.png"
+      }
+    },
+    {
+      "id": "pl-9",
+      "pageId": "starter-p4",
+      "mergeId": null,
+      "row": 1,
+      "col": 1,
+      "kind": "card",
+      "cardId": "base1-2",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base1-2",
+        "name": "Blastoise",
+        "set": "base1",
+        "number": "2",
+        "imageUrl": "https://images.pokemontcg.io/base1/2.png"
+      }
+    },
+    {
+      "id": "pl-10",
+      "pageId": "starter-p4",
+      "mergeId": null,
+      "row": 1,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base1-42",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base1-42",
+        "name": "Wartortle",
+        "set": "base1",
+        "number": "42",
+        "imageUrl": "https://images.pokemontcg.io/base1/42.png"
+      }
+    },
+    {
+      "id": "pl-11",
+      "pageId": "starter-p5",
+      "mergeId": null,
+      "row": 0,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base1-10",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base1-10",
+        "name": "Mewtwo",
+        "set": "base1",
+        "number": "10",
+        "imageUrl": "https://images.pokemontcg.io/base1/10.png"
+      }
+    },
+    {
+      "id": "pl-12",
+      "pageId": "starter-p5",
+      "mergeId": null,
+      "row": 0,
+      "col": 1,
+      "kind": "card",
+      "cardId": "basep-47",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "basep-47",
+        "name": "Mew",
+        "set": "basep",
+        "number": "47",
+        "imageUrl": "https://images.pokemontcg.io/basep/47.png"
+      }
+    },
+    {
+      "id": "pl-13",
+      "pageId": "starter-p6",
+      "mergeId": null,
+      "row": 1,
+      "col": 1,
+      "kind": "card",
+      "cardId": "base2-51",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base2-51",
+        "name": "Eevee",
+        "set": "base2",
+        "number": "51",
+        "imageUrl": "https://images.pokemontcg.io/base2/51.png"
+      }
+    },
+    {
+      "id": "pl-14",
+      "pageId": "starter-p6",
+      "mergeId": null,
+      "row": 0,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base2-19",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base2-19",
+        "name": "Flareon",
+        "set": "base2",
+        "number": "19",
+        "imageUrl": "https://images.pokemontcg.io/base2/19.png"
+      }
+    },
+    {
+      "id": "pl-15",
+      "pageId": "starter-p6",
+      "mergeId": null,
+      "row": 0,
+      "col": 2,
+      "kind": "card",
+      "cardId": "base2-12",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base2-12",
+        "name": "Vaporeon",
+        "set": "base2",
+        "number": "12",
+        "imageUrl": "https://images.pokemontcg.io/base2/12.png"
+      }
+    },
+    {
+      "id": "pl-16",
+      "pageId": "starter-p7",
+      "mergeId": null,
+      "row": 0,
+      "col": 1,
+      "kind": "card",
+      "cardId": "base2-54",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base2-54",
+        "name": "Jigglypuff",
+        "set": "base2",
+        "number": "54",
+        "imageUrl": "https://images.pokemontcg.io/base2/54.png"
+      }
+    },
+    {
+      "id": "pl-17",
+      "pageId": "starter-p7",
+      "mergeId": null,
+      "row": 1,
+      "col": 1,
+      "kind": "card",
+      "cardId": "base2-16",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base2-16",
+        "name": "Wigglytuff",
+        "set": "base2",
+        "number": "16",
+        "imageUrl": "https://images.pokemontcg.io/base2/16.png"
+      }
+    },
+    {
+      "id": "pl-18",
+      "pageId": "starter-p8",
+      "mergeId": null,
+      "row": 0,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base3-20",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base3-20",
+        "name": "Gengar",
+        "set": "base3",
+        "number": "20",
+        "imageUrl": "https://images.pokemontcg.io/base3/20.png"
+      }
+    },
+    {
+      "id": "pl-19",
+      "pageId": "starter-p8",
+      "mergeId": null,
+      "row": 2,
+      "col": 2,
+      "kind": "card",
+      "cardId": "base3-19",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "base3-19",
+        "name": "Dragonite",
+        "set": "base3",
+        "number": "19",
+        "imageUrl": "https://images.pokemontcg.io/base3/19.png"
+      }
+    },
+    {
+      "id": "pl-20",
+      "pageId": "starter-p9",
+      "mergeId": null,
+      "row": 1,
+      "col": 1,
+      "kind": "card",
+      "cardId": "pgo-35",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "pgo-35",
+        "name": "Sylveon",
+        "set": "pgo",
+        "number": "35",
+        "imageUrl": "https://images.pokemontcg.io/pgo/35.png"
+      }
+    },
+    {
+      "id": "pl-21",
+      "pageId": "starter-p9",
+      "mergeId": null,
+      "row": 0,
+      "col": 2,
+      "kind": "card",
+      "cardId": "bw5-60",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "bw5-60",
+        "name": "Umbreon",
+        "set": "bw5",
+        "number": "60",
+        "imageUrl": "https://images.pokemontcg.io/bw5/60.png"
+      }
+    }
+  ]
+}

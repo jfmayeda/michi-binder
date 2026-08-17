@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "kind": "page-template",
+  "id": "legend-box",
+  "title": "Legend box (draft)",
+  "draft": true,
+  "notes": "Draft page template — Jacob will replace.",
+  "layoutId": "3x3",
+  "pageMode": "single",
+  "pages": [
+    {
+      "id": "legend-box-p1",
+      "position": 1
+    }
+  ],
+  "merges": [
+    {
+      "id": "legend-box-m",
+      "pageId": "legend-box-p1",
+      "row": 0,
+      "col": 0,
+      "rowSpan": 2,
+      "colSpan": 2,
+      "spansGutter": false
+    }
+  ],
+  "placements": [
+    {
+      "id": "legend-box-mp",
+      "pageId": "legend-box-p1",
+      "mergeId": "legend-box-m",
+      "row": null,
+      "col": null,
+      "kind": "card",
+      "cardId": "base1-10",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "wanted",
+      "card": {
+        "card_id": "base1-10",
+        "name": "Mewtwo",
+        "set": "base1",
+        "number": "10",
+        "imageUrl": "https://images.pokemontcg.io/base1/10.png"
+      }
+    },
+    {
+      "id": "legend-box-pl0",
+      "pageId": "legend-box-p1",
+      "mergeId": null,
+      "row": 0,
+      "col": 2,
+      "kind": "card",
+      "cardId": "basep-47",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "basep-47",
+        "name": "Mew",
+        "set": "basep",
+        "number": "47",
+        "imageUrl": "https://images.pokemontcg.io/basep/47.png"
+      }
+    },
+    {
+      "id": "legend-box-pl1",
+      "pageId": "legend-box-p1",
+      "mergeId": null,
+      "row": 2,
+      "col": 0,
+      "kind": "card",
+      "cardId": "basep-50",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": null,
+      "card": {
+        "card_id": "basep-50",
+        "name": "Celebi",
+        "set": "basep",
+        "number": "50",
+        "imageUrl": "https://images.pokemontcg.io/basep/50.png"
+      }
+    }
+  ]
+}

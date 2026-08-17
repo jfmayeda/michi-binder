@@ -1,9 +1,12 @@
 # Dependencies
 node_modules/
+.pnp
+.pnp.*
 
 # Next.js build output
 .next/
 out/
+build/
 
 # Environment variables & secrets (NEVER commit these)
 .env
@@ -11,6 +14,7 @@ out/
 
 # Logs
 *.log
+npm-debug.log*
 
 # Testing
 coverage/
