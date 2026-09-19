@@ -26,7 +26,9 @@
   --shell: clamp(6px, 0.7vw, 12px);
 
   display: flex;
-  align-items: stretch;
+  /* flex-start, not stretch: the pages' aspect-ratio decides their height, and
+     stretch would override it and squash the pockets again. */
+  align-items: flex-start;
   justify-content: center;
   width: 100%;
   max-width: var(--binder-max, 64rem);
@@ -93,6 +95,7 @@
 .binder-spine {
   position: relative;
   flex: none;
+  align-self: stretch;
   width: var(--spine-w);
   background:
     linear-gradient(
@@ -207,8 +210,9 @@
 
 .binder-spread {
   display: flex;
-  align-items: stretch;
+  align-items: flex-start;
   justify-content: center;
+  width: 100%;
   transition:
     opacity var(--duration-page) var(--ease-page),
     transform var(--duration-page) var(--ease-page);
@@ -259,6 +263,11 @@
    runs 2D by default because precision editing must never wait on a flip. */
 
 .binder-stage {
+  /* A plain div inside a centred column flex parent shrinks to its content,
+     which collapsed the binder to nothing. It must claim the full width. */
+  display: flex;
+  justify-content: center;
+  width: 100%;
   perspective: 2400px;
   perspective-origin: 50% 46%;
 }
@@ -364,4 +373,31 @@
     transition: none;
   }
 }
+}
+
+@layer components {
+  /* Pocket interaction states. Each one changes shape or adds a mark as well
+     as a tint, so none of them depends on colour to be read. */
+  .binder-pocket.is-selected {
+    outline: 2px solid var(--color-red);
+    outline-offset: -2px;
+    background: var(--color-red-wash);
+  }
+
+  /* Valid destinations while a card is waiting to be placed. */
+  .binder-pocket.is-targetable {
+    outline: 1px dashed var(--color-blue);
+    outline-offset: -3px;
+  }
+
+  .binder-pocket.is-over {
+    outline: 2px solid var(--color-blue);
+    outline-offset: -2px;
+    background: var(--color-blue-wash);
+  }
+
+  .binder-pocket:focus-visible {
+    outline: 3px solid var(--color-ink);
+    outline-offset: -3px;
+  }
 }

@@ -1,52 +1,29 @@
 import Link from 'next/link';
+import { Panel } from '@/components/ui/Panel';
+
+const LINKS = [
+  ['/dev/styleguide', 'Style guide', 'Tokens, components and every state they have'],
+  ['/dev/flip', 'Page turn', 'The binder viewer, 3D turn and 2D fallback'],
+  ['/dev/flip?lowperf=1', 'Page turn, forced 2D', 'What a low-powered device gets'],
+  ['/dev/search', 'Card box', 'Search panel on its own'],
+  ['/dev/color-check', 'Colour extraction', 'Clusters pulled from Base Set art'],
+];
 
 export default function DevIndexPage() {
   return (
-    <main className="mx-auto max-w-xl px-8 py-16">
-      <p className="font-display text-sm tracking-wide text-ink-soft uppercase">Dev only</p>
-      <h1 className="mt-2 font-display text-4xl text-ink">Dev playground</h1>
-      <p className="mt-3 text-ink-soft">This route 404s in production builds.</p>
-      <ul className="mt-8 flex flex-col gap-3">
-        <li>
-          <Link
-            href="/dev/styleguide"
-            className="block rounded-lg bg-paper-sun px-4 py-3 shadow-soft text-ink hover:bg-accent-soft"
-          >
-            Styleguide — tokens, type, motion
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/dev/flip"
-            className="block rounded-lg bg-paper-sun px-4 py-3 shadow-soft text-ink hover:bg-accent-soft"
-          >
-            Page flip — CSS 3D prototype
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/dev/flip?lowperf=1"
-            className="block rounded-lg bg-paper-sun px-4 py-3 shadow-soft text-ink hover:bg-accent-soft"
-          >
-            Page flip — force 2D fallback
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/dev/search"
-            className="block rounded-lg bg-paper-sun px-4 py-3 shadow-soft text-ink hover:bg-accent-soft"
-          >
-            Search panel
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/dev/color-check"
-            className="block rounded-lg bg-paper-sun px-4 py-3 shadow-soft text-ink hover:bg-accent-soft"
-          >
-            Color check — base1 clusters
-          </Link>
-        </li>
+    <main className="mx-auto max-w-xl px-4 py-12 sm:px-6">
+      <p className="gb-label">Development only · 404s in production</p>
+      <h1 className="mt-1 text-3xl">Workbench</h1>
+      <ul className="mt-6 grid gap-2">
+        {LINKS.map(([href, title, note]) => (
+          <li key={href}>
+            <Link href={href} className="block">
+              <Panel title={title}>
+                <p className="text-sm text-ink-soft">{note}</p>
+              </Panel>
+            </Link>
+          </li>
+        ))}
       </ul>
     </main>
   );

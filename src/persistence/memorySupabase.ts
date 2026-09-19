@@ -14,12 +14,13 @@ export class MemorySupabase {
   }
 
   from(table: string) {
-    const self = this;
+    const rowsFor = (t: string) => this.rows(t);
+    const replaceRows = (t: string, rows: Row[]) => this.tables.set(t, rows);
     return {
-      select(_cols: string) {
+      select() {
         return {
           eq(col: string, val: string) {
-            const matched = copyRows(self.rows(table).filter((r) => r[col] === val));
+            const matched = copyRows(rowsFor(table).filter((r) => r[col] === val));
             const promise = Promise.resolve({ data: matched, error: null });
             return Object.assign(promise, {
               maybeSingle: async () => ({ data: matched[0] ?? null, error: null }),
@@ -27,7 +28,7 @@ export class MemorySupabase {
           },
           async in(col: string, vals: string[]) {
             return {
-              data: copyRows(self.rows(table).filter((r) => vals.includes(String(r[col])))),
+              data: copyRows(rowsFor(table).filter((r) => vals.includes(String(r[col])))),
               error: null,
             };
           },
@@ -35,7 +36,7 @@ export class MemorySupabase {
       },
       async upsert(input: Row | Row[]) {
         const incoming = Array.isArray(input) ? input : [input];
-        const tableRows = self.rows(table);
+        const tableRows = rowsFor(table);
         for (const row of incoming) {
           const idx = tableRows.findIndex((r) => r.id === row.id);
           if (idx >= 0) tableRows[idx] = { ...tableRows[idx], ...row };
@@ -46,16 +47,16 @@ export class MemorySupabase {
       delete() {
         return {
           async eq(col: string, val: string) {
-            self.tables.set(
+            replaceRows(
               table,
-              self.rows(table).filter((r) => r[col] !== val),
+              rowsFor(table).filter((r) => r[col] !== val),
             );
             return { data: null, error: null };
           },
           async in(col: string, vals: string[]) {
-            self.tables.set(
+            replaceRows(
               table,
-              self.rows(table).filter((r) => !vals.includes(String(r[col]))),
+              rowsFor(table).filter((r) => !vals.includes(String(r[col]))),
             );
             return { data: null, error: null };
           },

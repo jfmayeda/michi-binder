@@ -1,100 +1,135 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Binder2D } from '@/components/binder/Binder2D';
-import { FlipBinder } from '@/components/binder/FlipBinder';
-import {
-  persistRenderMode,
-  probeFrameTimes,
-  readForcedLowPerf,
-  readStoredRenderMode,
-  type RenderMode,
-} from '@/components/binder/renderMode';
+import { BinderViewer, type ViewerSpread } from '@/components/binder/BinderViewer';
+import { TemplateSpread } from '@/components/landing/TemplateSpread';
+import { Dialog } from '@/components/ui/Dialog';
 import { createBrowserPlaygroundAdapter } from '@/persistence';
 import { ensurePlaygroundBinder, PLAYGROUND_BINDER_ID } from '@/persistence/playgroundBinder';
 import { cloneTemplatePage } from '@/templates/clone';
-import { templateToPages } from '@/templates/showcase';
 import starter from '@/templates/catalog/starter-binder.json';
 import type { TemplateFile } from '@/templates/types';
 
-const starterTemplate = starter as TemplateFile;
+const template = starter as TemplateFile;
+
+/** Facing pairs: spread 0 is the inside cover plus page 1, then (2,3), (4,5)… */
+function buildSpreads(file: TemplateFile) {
+  const pages = file.pages.slice().sort((a, b) => a.position - b.position);
+  const out: { left: string | null; right: string | null }[] = [
+    { left: null, right: pages[0]?.id ?? null },
+  ];
+  for (let i = 1; i < pages.length; i += 2) {
+    out.push({ left: pages[i]?.id ?? null, right: pages[i + 1]?.id ?? null });
+  }
+  return out;
+}
 
 export function LandingDesk() {
   const router = useRouter();
-  const [mode, setMode] = useState<RenderMode | null>(null);
-  const [spread, setSpread] = useState(0);
-  const probed = useRef(false);
-  const pages = templateToPages(starterTemplate);
+  const [index, setIndex] = useState(1);
+  const [confirmReplace, setConfirmReplace] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    if (readForcedLowPerf()) {
-      setMode('2d');
+  const pageSpreads = useMemo(() => buildSpreads(template), []);
+  const viewerSpreads: ViewerSpread[] = pageSpreads.map((s) => ({
+    left: s.left ? <TemplateSpread template={template} pageId={s.left} /> : null,
+    right: s.right ? <TemplateSpread template={template} pageId={s.right} /> : null,
+  }));
+
+  /** The page whose copy the primary action would open. */
+  const visiblePagePosition = index === 0 ? 1 : index * 2 + 1;
+
+  const openCopy = async (force: boolean) => {
+    const adapter = createBrowserPlaygroundAdapter();
+    const existing = await adapter.getBinder(PLAYGROUND_BINDER_ID);
+    const hasWork = Boolean(existing && existing.placements.length > 0);
+    if (hasWork && !force) {
+      setConfirmReplace(true);
       return;
     }
-    setMode(readStoredRenderMode() ?? '3d');
-  }, []);
-
-  const onFlipMotionStart = useCallback(() => {
-    if (probed.current) return;
-    probed.current = true;
-    if (readForcedLowPerf() || readStoredRenderMode()) return;
-    void probeFrameTimes(700).then((result) => {
-      if (result.shouldDegrade) {
-        setMode('2d');
-        persistRenderMode('2d');
-      }
-    });
-  }, []);
-
-  const openPlayground = async (clone: boolean) => {
-    const adapter = createBrowserPlaygroundAdapter();
-    if (clone) {
-      const pagePosition = spread === 0 ? 1 : spread * 2 + 1;
-      const binder = cloneTemplatePage(starterTemplate, pagePosition);
-      await adapter.saveBinder(binder);
-    } else {
-      const existing = await adapter.getBinder(PLAYGROUND_BINDER_ID);
-      if (!existing) await ensurePlaygroundBinder(adapter);
-    }
+    setBusy(true);
+    const copy = cloneTemplatePage(template, visiblePagePosition, PLAYGROUND_BINDER_ID);
+    await adapter.saveBinder(copy);
     router.push(`/studio/${PLAYGROUND_BINDER_ID}`);
   };
 
-  if (!mode) return <div className="binder-desk" />;
+  const openBlank = async () => {
+    setBusy(true);
+    const adapter = createBrowserPlaygroundAdapter();
+    const binder = await ensurePlaygroundBinder(adapter);
+    router.push(`/studio/${binder.id}`);
+  };
 
   return (
-    <div>
-      {mode === '3d' ? (
-        <FlipBinder
-          pages={pages}
-          hint="Flip the starter scrapbook — cards on these pages are baked in, so the big catalog stays asleep."
-          onFlipMotionStart={onFlipMotionStart}
-          onSpreadChange={setSpread}
-        />
-      ) : (
-        <Binder2D
-          pages={pages}
-          hint="2D mode — same starter scrapbook, quieter motion."
-          onFlipMotionStart={onFlipMotionStart}
-          onSpreadChange={setSpread}
-        />
-      )}
-      <div className="mx-auto mt-4 flex max-w-xl flex-wrap justify-center gap-3 px-4 pb-10">
+    <div className="flex flex-col items-center gap-5">
+      <BinderViewer
+        layoutId={template.layoutId}
+        spreads={viewerSpreads}
+        index={index}
+        onIndexChange={setIndex}
+        label="Starter binder"
+        maxWidth="46rem"
+      />
+
+      <div className="flex flex-col items-center gap-2">
         <button
           type="button"
-          className="rounded-md bg-accent px-4 py-2 font-display text-paper-sun shadow-stamp"
-          onClick={() => void openPlayground(true)}
+          className="gb-btn gb-btn--primary gb-btn--lg"
+          disabled={busy}
+          onClick={() => void openCopy(false)}
         >
-          Clone this page
+          {busy ? 'Opening…' : 'Edit a copy of this page'}
         </button>
         <button
           type="button"
-          className="rounded-md bg-paper-sun px-4 py-2 font-display text-ink shadow-stamp"
-          onClick={() => void openPlayground(false)}
+          className="gb-btn gb-btn--quiet"
+          disabled={busy}
+          onClick={() => void openBlank()}
         >
-          Start from scratch
+          or start with an empty page
         </button>
+        <p className="max-w-prose text-center text-mini text-ink-soft">
+          No account needed. Your page is saved in this browser.
+        </p>
       </div>
+
+      {confirmReplace ? (
+        <Dialog
+          title="Replace the page you already have?"
+          description="There is already a page saved in this browser with cards on it. Opening a copy of the starter page will take its place."
+          onClose={() => setConfirmReplace(false)}
+          width="sm"
+          footer={
+            <>
+              <button
+                type="button"
+                className="gb-btn"
+                onClick={() => {
+                  setConfirmReplace(false);
+                  void openBlank();
+                }}
+              >
+                Open my page instead
+              </button>
+              <button
+                type="button"
+                className="gb-btn gb-btn--primary"
+                onClick={() => {
+                  setConfirmReplace(false);
+                  void openCopy(true);
+                }}
+              >
+                Replace it
+              </button>
+            </>
+          }
+        >
+          <p className="text-sm text-ink-soft">
+            This cannot be undone, so open your own page first if you are not sure.
+          </p>
+        </Dialog>
+      ) : null}
     </div>
   );
 }

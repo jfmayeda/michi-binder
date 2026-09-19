@@ -6,6 +6,15 @@ import { cmToPt } from '@/domain/print';
 import { assertArtExport, buildArtPdf, dpiWarning } from './artPdf';
 import type { Placement } from '@/domain/types';
 
+/** Smallest valid PNG: one opaque pixel. Enough to prove the embed happened. */
+const PNG_1PX = new Uint8Array([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
+  0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
+  0xde, 0x00, 0x00, 0x00, 0x0c, 0x49, 0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0xf8, 0xcf, 0xc0, 0x00,
+  0x00, 0x03, 0x01, 0x01, 0x00, 0x18, 0xdd, 0x8d, 0xb0, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e,
+  0x44, 0xae, 0x42, 0x60, 0x82,
+]);
+
 function artBinder() {
   let binder = createBinder({ id: 'e', layoutId: '2x2', pageMode: 'single', pageCount: 1 });
   const pageId = binder.pages[0].id;
@@ -60,6 +69,35 @@ describe('T4.4 art export', () => {
     expect(whole.pageCount).not.toBe(split.pageCount);
     expect(split.plan.physical).toHaveLength(4);
     expect(whole.plan.wholeStripVariants).toHaveLength(2);
+  });
+
+  it('embeds the artwork instead of a blank trim page', async () => {
+    const { binder, merge, placement } = artBinder();
+    const blank = await buildArtPdf(binder, merge, placement);
+    const withArt = await buildArtPdf(binder, merge, placement, {
+      images: { full: PNG_1PX, pieces: [PNG_1PX, PNG_1PX, PNG_1PX, PNG_1PX] },
+    });
+    // An embedded image adds an XObject stream, so the document grows.
+    expect(withArt.bytes.byteLength).toBeGreaterThan(blank.bytes.byteLength);
+    const pdf = await PDFDocument.load(withArt.bytes);
+    expect(pdf.getPageCount()).toBe(blank.pageCount);
+  });
+
+  it('bleed adds a bleed box without moving the trim box', async () => {
+    const { binder, merge, placement } = artBinder();
+    const { bytes } = await buildArtPdf(binder, merge, placement, {
+      bleed: true,
+      images: { full: PNG_1PX, pieces: [PNG_1PX, PNG_1PX, PNG_1PX, PNG_1PX] },
+    });
+    const pdf = await PDFDocument.load(bytes);
+    // Page 0 is the full artwork; pieces start at page 1.
+    const piece = pdf.getPage(1);
+    const trim = piece.getTrimBox();
+    const bleed = piece.getBleedBox();
+    expect(Math.abs(trim.width - cmToPt(7))).toBeLessThan(0.01);
+    expect(Math.abs(trim.height - cmToPt(9.5))).toBeLessThan(0.01);
+    expect(Math.abs(bleed.width - cmToPt(7 + 0.6))).toBeLessThan(0.01);
+    expect(Math.abs(bleed.height - cmToPt(9.5 + 0.6))).toBeLessThan(0.01);
   });
 
   it('warns when source DPI is below 300', () => {

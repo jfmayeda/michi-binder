@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { Dialog } from '@/components/ui/Dialog';
 
 export const UNDO_TOAST_MS = 8000;
 
@@ -25,10 +26,7 @@ export function useConfirmWithUndo<T>(expiryMs = UNDO_TOAST_MS) {
   const [dialog, setDialog] = useState<ConfirmRequest<T> | null>(null);
   const [toast, setToast] = useState<ToastState<T> | null>(null);
 
-  const ask = useCallback((request: ConfirmRequest<T>) => {
-    setDialog(request);
-  }, []);
-
+  const ask = useCallback((request: ConfirmRequest<T>) => setDialog(request), []);
   const cancel = useCallback(() => setDialog(null), []);
 
   const confirm = useCallback(async () => {
@@ -62,6 +60,7 @@ export function useConfirmWithUndo<T>(expiryMs = UNDO_TOAST_MS) {
       onConfirm={() => void confirm()}
       onCancel={cancel}
       onUndo={() => void undo()}
+      onDismiss={() => setToast(null)}
     />
   );
 
@@ -74,41 +73,60 @@ export function ConfirmWithUndoToast<T>({
   onConfirm,
   onCancel,
   onUndo,
+  onDismiss,
 }: {
   dialog: Pick<ConfirmRequest<T>, 'title' | 'body' | 'confirmLabel' | 'cancelLabel'> | null;
   toast: { message: string } | null;
   onConfirm: () => void;
   onCancel: () => void;
   onUndo: () => void;
+  onDismiss?: () => void;
 }) {
   return (
     <>
       {dialog ? (
-        <div className="fixed inset-0 z-30 flex items-center justify-center bg-ink/40">
-          <div className="max-w-sm rounded-lg border border-rule bg-paper p-5 shadow-lift">
-            <p className="font-display text-xl text-ink">{dialog.title}</p>
-            <p className="mt-2 text-sm text-ink-soft">{dialog.body}</p>
-            <div className="mt-4 flex gap-2">
-              <button
-                type="button"
-                className="rounded-md bg-accent px-3 py-1.5 text-paper-sun shadow-stamp"
-                onClick={onConfirm}
-              >
-                {dialog.confirmLabel ?? 'Confirm'}
-              </button>
-              <button type="button" className="rounded-md px-3 py-1.5 text-ink-soft" onClick={onCancel}>
+        <Dialog
+          title={dialog.title}
+          description={dialog.body}
+          onClose={onCancel}
+          width="sm"
+          footer={
+            <>
+              <button type="button" className="gb-btn" onClick={onCancel}>
                 {dialog.cancelLabel ?? 'Keep it'}
               </button>
-            </div>
-          </div>
-        </div>
+              <button type="button" className="gb-btn gb-btn--primary" onClick={onConfirm}>
+                {dialog.confirmLabel ?? 'Confirm'}
+              </button>
+            </>
+          }
+        >
+          <p className="text-sm text-ink-soft">You can undo this for a few seconds afterwards.</p>
+        </Dialog>
       ) : null}
       {toast ? (
-        <div className="fixed bottom-6 left-1/2 z-30 -translate-x-1/2 rounded-md border border-rule bg-paper-sun px-4 py-3 shadow-lift">
-          {toast.message}{' '}
-          <button type="button" className="text-accent underline" onClick={onUndo}>
-            Undo
-          </button>
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-5 left-1/2 z-40 -translate-x-1/2"
+        >
+          <span className="gb-prompt shadow-[var(--shadow-overlay)]">
+            <span className="gb-prompt__marker" aria-hidden="true">
+              done
+            </span>
+            {toast.message}
+            <button type="button" className="gb-btn !min-h-8 !px-2.5" onClick={onUndo}>
+              Undo
+            </button>
+            <button
+              type="button"
+              className="gb-icon-btn !h-7 !w-7"
+              aria-label="Dismiss"
+              onClick={onDismiss}
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+          </span>
         </div>
       ) : null}
     </>

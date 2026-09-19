@@ -1,5 +1,5 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import { cmToPt, printPlan, type PrintPlan } from '@/domain/print';
+import { BLEED_CM, cmToPt, printPlan, type PhysicalPiece, type PrintPlan } from '@/domain/print';
 import type { Binder, Merge, Placement } from '@/domain/types';
 
 const MARK = cmToPt(1);
@@ -50,25 +50,52 @@ async function addTrimPage(
   trimH: number,
   label: string,
   note: string,
+  artwork?: Uint8Array,
+  bleed = false,
 ) {
   const page = pdf.addPage([trimW + MARK * 2, trimH + MARK * 2]);
   page.setTrimBox(MARK, MARK, trimW, trimH);
-  page.drawRectangle({ x: MARK, y: MARK, width: trimW, height: trimH, color: PAPER });
+
+  // The artwork is drawn over the trim box, extended by the bleed on every
+  // side when bleed is on. Trim stays exact either way, so a ruler check
+  // measures the same number whether or not bleed was requested.
+  const bleedPt = bleed ? cmToPt(BLEED_CM) : 0;
+  if (bleedPt > 0) {
+    page.setBleedBox(MARK - bleedPt, MARK - bleedPt, trimW + bleedPt * 2, trimH + bleedPt * 2);
+  }
+
+  if (artwork) {
+    const png = await pdf.embedPng(artwork);
+    page.drawImage(png, {
+      x: MARK - bleedPt,
+      y: MARK - bleedPt,
+      width: trimW + bleedPt * 2,
+      height: trimH + bleedPt * 2,
+    });
+  } else {
+    page.drawRectangle({ x: MARK, y: MARK, width: trimW, height: trimH, color: PAPER });
+  }
+
   cropMarks(page, MARK, MARK, trimW, trimH);
   page.drawText(label, { x: MARK, y: MARK + trimH + 6, size: 8, font, color: INK });
   page.drawText(note, { x: MARK, y: 8, size: 7, font, color: INK });
   return page;
 }
 
-export async function buildArtPdf(
-  binder: Binder,
-  merge: Merge,
-  placement: Placement,
-  opts: { useWholeStrips?: boolean } = {},
-): Promise<{ bytes: Uint8Array; plan: PrintPlan; pageCount: number }> {
-  assertArtExport(placement);
-  const plan = printPlan(binder, merge);
-  const pieces = opts.useWholeStrips && plan.wholeStripVariants.length > 0
+export type ArtPdfOptions = {
+  useWholeStrips?: boolean;
+  /** Adds 3 mm of bleed around every piece. Trim size does not change. */
+  bleed?: boolean;
+  /**
+   * Rendered artwork from `@/export/composeArt`. Without it the PDF is a
+   * correctly sized blank template — useful for a dry run, but it is not the
+   * art, so the UI never offers that as "export my art".
+   */
+  images?: { full: Uint8Array; pieces: Uint8Array[] };
+};
+
+export function piecesFor(plan: PrintPlan, useWholeStrips = false): PhysicalPiece[] {
+  return useWholeStrips && plan.wholeStripVariants.length > 0
     ? plan.wholeStripVariants.map((piece, i) => ({
         ...plan.physical[0],
         ...piece,
@@ -79,6 +106,17 @@ export async function buildArtPdf(
         label: `Piece ${i + 1}/${plan.wholeStripVariants.length}`,
       }))
     : plan.physical;
+}
+
+export async function buildArtPdf(
+  binder: Binder,
+  merge: Merge,
+  placement: Placement,
+  opts: ArtPdfOptions = {},
+): Promise<{ bytes: Uint8Array; plan: PrintPlan; pageCount: number }> {
+  assertArtExport(placement);
+  const plan = printPlan(binder, merge);
+  const pieces = piecesFor(plan, opts.useWholeStrips);
 
   const pdf = await PDFDocument.create();
   const font = await pdf.embedFont(StandardFonts.TimesRoman);
@@ -91,6 +129,7 @@ export async function buildArtPdf(
     cmToPt(plan.compositionCm.height),
     `Full artwork — ${plan.annotation}`,
     note,
+    opts.images?.full,
   );
 
   for (let i = 0; i < pieces.length; i += 1) {
@@ -104,6 +143,8 @@ export async function buildArtPdf(
       cmToPt(piece.heightCm ?? piece.rowSpan * 9.5),
       `${piece.label ?? `Piece ${i + 1}/${pieces.length}`}${join}`,
       note,
+      opts.images?.pieces[i],
+      opts.bleed ?? false,
     );
   }
 

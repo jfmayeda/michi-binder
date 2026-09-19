@@ -1,12 +1,17 @@
 import { createBinder } from '@/domain/slots';
 import type { Binder, Placement } from '@/domain/types';
-import { PLAYGROUND_BINDER_ID } from '@/persistence/playgroundBinder';
 import type { TemplateFile } from './types';
 
+/**
+ * binderId is required on purpose. It used to default to the playground id,
+ * which meant "clone this page" silently wrote over whatever the visitor
+ * already had open, with no confirmation and no undo. Callers must now say
+ * where the copy goes.
+ */
 export function cloneTemplatePage(
   template: TemplateFile,
   pagePosition: number,
-  binderId = PLAYGROUND_BINDER_ID,
+  binderId: string,
 ): Binder {
   const sourcePage = template.pages.find((p) => p.position === pagePosition);
   if (!sourcePage) throw new Error('unknown-template-page');

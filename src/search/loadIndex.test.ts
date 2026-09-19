@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ensureCatalog, isCardIndexUrl, markBinderInteractive, resetSearchLoaderForTests } from './loadIndex';
+import { ensureCatalog, isCardIndexUrl, resetSearchLoaderForTests } from './loadIndex';
 
 afterEach(() => {
   resetSearchLoaderForTests();
@@ -49,8 +49,10 @@ describe('AT-9 lazy index loader', () => {
 });
 
 describe('markBinderInteractive', () => {
-  it('is a no-op for landing because landing never calls it', () => {
+  it('is never called from the landing page, only from the editor', () => {
     const landing = readFileSync(join(process.cwd(), 'app/page.tsx'), 'utf8');
     expect(landing.includes('markBinderInteractive')).toBe(false);
+    const studio = readFileSync(join(process.cwd(), 'src/components/editor/Studio.tsx'), 'utf8');
+    expect(studio.includes('markBinderInteractive')).toBe(true);
   });
 });

@@ -14,13 +14,62 @@ describe('templates', () => {
     }
   });
 
-  it('clones a starter page including merges and transforms', () => {
-    const cloned = cloneTemplatePage(starterBinder, 3);
+  it('clones a starter page including its merges', () => {
+    const cloned = cloneTemplatePage(starterBinder, 3, 'target-binder');
     expect(cloned.pages).toHaveLength(1);
     expect(cloned.merges).toHaveLength(1);
     expect(cloned.merges[0].rowSpan).toBe(2);
-    expect(cloned.placements.some((p) => p.mergeId === cloned.merges[0].id)).toBe(true);
-    expect(cloned.placements.find((p) => p.mergeId)?.cardId).toBe('base1-4');
+    expect(cloned.merges[0].colSpan).toBe(2);
+    expect(cloned.merges[0].pageId).toBe(cloned.pages[0].id);
+    expect(cloned.id).toBe('target-binder');
+    // Every placement is re-pointed at the new page, none left dangling.
+    expect(cloned.placements.every((p) => p.pageId === cloned.pages[0].id)).toBe(true);
+    expect(cloned.placements.length).toBeGreaterThan(0);
+  });
+
+  it('carries whatever sits inside a merge, transform and all', () => {
+    // Built here rather than read from the starter file, so showcase content
+    // is free to change without weakening what this actually checks.
+    const fixture = {
+      ...starterBinder,
+      pages: [{ id: 'src-page', position: 1 }],
+      merges: [
+        { id: 'mg', pageId: 'src-page', row: 0, col: 0, rowSpan: 2, colSpan: 2, spansGutter: false },
+      ],
+      placements: [
+        {
+          id: 'inside',
+          pageId: 'src-page',
+          mergeId: 'mg',
+          row: null,
+          col: null,
+          kind: 'art' as const,
+          cardId: null,
+          assetKind: 'upload' as const,
+          uploadAssetId: 'asset-9',
+          packItemId: null,
+          transform: { version: 1 as const, crop: { x: 0.1, y: 0.2, w: 0.5, h: 0.5 }, rotation: 90 as const },
+          ownership: null,
+        },
+      ],
+    };
+    const cloned = cloneTemplatePage(fixture, 1, 'copy');
+    const carried = cloned.placements.find((p) => p.mergeId === cloned.merges[0].id);
+    expect(carried).toBeDefined();
+    expect(carried?.uploadAssetId).toBe('asset-9');
+    expect(carried?.transform).toEqual({
+      version: 1,
+      crop: { x: 0.1, y: 0.2, w: 0.5, h: 0.5 },
+      rotation: 90,
+    });
+  });
+
+  it('never silently targets the playground binder', () => {
+    const a = cloneTemplatePage(starterBinder, 3, 'binder-a');
+    const b = cloneTemplatePage(starterBinder, 3, 'binder-b');
+    expect(a.id).not.toBe(b.id);
+    expect(a.pages[0].binderId).toBe('binder-a');
+    expect(b.pages[0].binderId).toBe('binder-b');
   });
 
   it('refresh rewrites display fields from the card index', () => {

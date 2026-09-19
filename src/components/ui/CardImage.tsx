@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 /**
  * Stable hue from a card id, so a card's stand-in looks the same every time
@@ -24,6 +24,8 @@ export type CardImageProps = {
   /** Decorative inside a labelled pocket; named when it stands alone. */
   alt?: string;
   loading?: 'lazy' | 'eager';
+  /** False when the surrounding tile already shows name, set and number. */
+  showMeta?: boolean;
 };
 
 /**
@@ -35,7 +37,13 @@ export type CardImageProps = {
  * name, set and number — enough to keep a spread readable and a pull list
  * checkable with no network at all.
  */
-export function CardImage({
+export function CardImage(props: CardImageProps) {
+  // Keyed on src so a new source starts from a fresh loading state. Resetting
+  // it in an effect would paint the old state for a frame first.
+  return <CardImageInner key={props.src ?? 'none'} {...props} />;
+}
+
+function CardImageInner({
   src,
   name,
   setId,
@@ -44,12 +52,9 @@ export function CardImage({
   className = '',
   alt,
   loading = 'lazy',
+  showMeta = true,
 }: CardImageProps) {
   const [state, setState] = useState<'loading' | 'ok' | 'failed'>(src ? 'loading' : 'failed');
-
-  useEffect(() => {
-    setState(src ? 'loading' : 'failed');
-  }, [src]);
 
   if (state !== 'failed' && src) {
     return (
@@ -90,12 +95,18 @@ export function CardImage({
           background: `radial-gradient(120% 100% at 30% 15%, hsl(${hue} 52% 80%), hsl(${(hue + 34) % 360} 40% 54%))`,
         }}
       />
-      <span className="flex min-h-0 flex-1 flex-col justify-between gap-0.5 p-[4%]">
-        <span className="gb-cardfallback__name line-clamp-3 text-ink">{name}</span>
-        <span className="gb-num gb-cardfallback__meta text-ink-faint">
-          {setId ?? '—'} {number ? `· ${number}` : ''}
+      {showMeta ? (
+        <span className="flex min-h-0 flex-1 flex-col justify-between gap-0.5 p-[4%]">
+          <span className="gb-cardfallback__name line-clamp-3 text-ink">{name}</span>
+          <span className="gb-num gb-cardfallback__meta text-ink-faint">
+            {setId ?? '—'} {number ? `· ${number}` : ''}
+          </span>
         </span>
-      </span>
+      ) : (
+        <span className="flex min-h-0 flex-1 items-center justify-center p-[6%]">
+          <span className="gb-label text-center">No art</span>
+        </span>
+      )}
     </span>
   );
 }

@@ -66,3 +66,57 @@ export function probeFrameTimes(durationMs: number): Promise<{
     requestAnimationFrame(tick);
   });
 }
+
+/* ------------------------------------------------------------------------
+ * Render mode as an external store.
+ *
+ * The mode lives in localStorage and the URL, both of which only exist on the
+ * client. Reading it in an effect meant the binder painted one mode and then
+ * swapped — a visible flash on every load. useSyncExternalStore lets the
+ * server render a known placeholder and the client settle on the real value
+ * without a cascading render.
+ * --------------------------------------------------------------------- */
+
+const listeners = new Set<() => void>();
+let snapshot: RenderMode | null = null;
+let snapshotRead = false;
+
+function computeSnapshot(): RenderMode {
+  if (readForcedLowPerf()) return '2d';
+  return readStoredRenderMode() ?? '3d';
+}
+
+export function subscribeRenderMode(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export function getRenderModeSnapshot(): RenderMode {
+  if (!snapshotRead) {
+    snapshot = computeSnapshot();
+    snapshotRead = true;
+  }
+  return snapshot as RenderMode;
+}
+
+/** The server has no storage and no URL, so it renders nothing binder-shaped. */
+export function getRenderModeServerSnapshot(): null {
+  return null;
+}
+
+export function setRenderMode(mode: RenderMode) {
+  snapshot = mode;
+  snapshotRead = true;
+  try {
+    persistRenderMode(mode);
+  } catch {
+    /* private browsing — the choice just does not stick */
+  }
+  listeners.forEach((l) => l());
+}
+
+export function resetRenderModeStoreForTests() {
+  snapshot = null;
+  snapshotRead = false;
+  listeners.clear();
+}

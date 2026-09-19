@@ -2,9 +2,9 @@
   "version": 1,
   "kind": "starter-binder",
   "id": "starter-binder",
-  "title": "First scrapbook (draft)",
+  "title": "Starter binder",
   "draft": true,
-  "notes": "Draft starter binder — Jacob will curate these spreads.",
+  "notes": "A sample spread: a full Kanto page facing a page built around one 2 \u00d7 2 art pocket.",
   "layoutId": "3x3",
   "pageMode": "double",
   "pages": [
@@ -118,111 +118,6 @@
         "set": "base1",
         "number": "63",
         "imageUrl": "https://images.pokemontcg.io/base1/63.png"
-      }
-    },
-    {
-      "id": "pl-4",
-      "pageId": "starter-p2",
-      "mergeId": null,
-      "row": 0,
-      "col": 0,
-      "kind": "card",
-      "cardId": "base1-44",
-      "assetKind": null,
-      "uploadAssetId": null,
-      "packItemId": null,
-      "transform": {},
-      "ownership": null,
-      "card": {
-        "card_id": "base1-44",
-        "name": "Bulbasaur",
-        "set": "base1",
-        "number": "44",
-        "imageUrl": "https://images.pokemontcg.io/base1/44.png"
-      }
-    },
-    {
-      "id": "pl-5",
-      "pageId": "starter-p2",
-      "mergeId": null,
-      "row": 0,
-      "col": 1,
-      "kind": "card",
-      "cardId": "base1-30",
-      "assetKind": null,
-      "uploadAssetId": null,
-      "packItemId": null,
-      "transform": {},
-      "ownership": null,
-      "card": {
-        "card_id": "base1-30",
-        "name": "Ivysaur",
-        "set": "base1",
-        "number": "30",
-        "imageUrl": "https://images.pokemontcg.io/base1/30.png"
-      }
-    },
-    {
-      "id": "pl-6",
-      "pageId": "starter-p2",
-      "mergeId": null,
-      "row": 0,
-      "col": 2,
-      "kind": "card",
-      "cardId": "base1-15",
-      "assetKind": null,
-      "uploadAssetId": null,
-      "packItemId": null,
-      "transform": {},
-      "ownership": null,
-      "card": {
-        "card_id": "base1-15",
-        "name": "Venusaur",
-        "set": "base1",
-        "number": "15",
-        "imageUrl": "https://images.pokemontcg.io/base1/15.png"
-      }
-    },
-    {
-      "id": "pl-7",
-      "pageId": "starter-p3",
-      "mergeId": "starter-m1",
-      "row": null,
-      "col": null,
-      "kind": "card",
-      "cardId": "base1-4",
-      "assetKind": null,
-      "uploadAssetId": null,
-      "packItemId": null,
-      "transform": {},
-      "ownership": "wanted",
-      "card": {
-        "card_id": "base1-4",
-        "name": "Charizard",
-        "set": "base1",
-        "number": "4",
-        "imageUrl": "https://images.pokemontcg.io/base1/4.png"
-      }
-    },
-    {
-      "id": "pl-8",
-      "pageId": "starter-p3",
-      "mergeId": null,
-      "row": 0,
-      "col": 2,
-      "kind": "card",
-      "cardId": "base1-24",
-      "assetKind": null,
-      "uploadAssetId": null,
-      "packItemId": null,
-      "transform": {},
-      "ownership": null,
-      "card": {
-        "card_id": "base1-24",
-        "name": "Charmeleon",
-        "set": "base1",
-        "number": "24",
-        "imageUrl": "https://images.pokemontcg.io/base1/24.png"
       }
     },
     {
@@ -496,6 +391,258 @@
         "set": "bw5",
         "number": "60",
         "imageUrl": "https://images.pokemontcg.io/bw5/60.png"
+      }
+    },
+    {
+      "id": "pl-l1",
+      "pageId": "starter-p2",
+      "mergeId": null,
+      "row": 0,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base1-44",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "owned",
+      "card": {
+        "card_id": "base1-44",
+        "name": "Bulbasaur",
+        "set": "base1",
+        "number": "44",
+        "imageUrl": "https://images.pokemontcg.io/base1/44.png"
+      }
+    },
+    {
+      "id": "pl-l2",
+      "pageId": "starter-p2",
+      "mergeId": null,
+      "row": 0,
+      "col": 1,
+      "kind": "card",
+      "cardId": "base1-30",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "owned",
+      "card": {
+        "card_id": "base1-30",
+        "name": "Ivysaur",
+        "set": "base1",
+        "number": "30",
+        "imageUrl": "https://images.pokemontcg.io/base1/30.png"
+      }
+    },
+    {
+      "id": "pl-l3",
+      "pageId": "starter-p2",
+      "mergeId": null,
+      "row": 0,
+      "col": 2,
+      "kind": "card",
+      "cardId": "base1-15",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "owned",
+      "card": {
+        "card_id": "base1-15",
+        "name": "Venusaur",
+        "set": "base1",
+        "number": "15",
+        "imageUrl": "https://images.pokemontcg.io/base1/15.png"
+      }
+    },
+    {
+      "id": "pl-l4",
+      "pageId": "starter-p2",
+      "mergeId": null,
+      "row": 1,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base1-46",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "wanted",
+      "card": {
+        "card_id": "base1-46",
+        "name": "Charmander",
+        "set": "base1",
+        "number": "46",
+        "imageUrl": "https://images.pokemontcg.io/base1/46.png"
+      }
+    },
+    {
+      "id": "pl-l5",
+      "pageId": "starter-p2",
+      "mergeId": null,
+      "row": 1,
+      "col": 1,
+      "kind": "card",
+      "cardId": "base1-24",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "owned",
+      "card": {
+        "card_id": "base1-24",
+        "name": "Charmeleon",
+        "set": "base1",
+        "number": "24",
+        "imageUrl": "https://images.pokemontcg.io/base1/24.png"
+      }
+    },
+    {
+      "id": "pl-l6",
+      "pageId": "starter-p2",
+      "mergeId": null,
+      "row": 1,
+      "col": 2,
+      "kind": "card",
+      "cardId": "base1-4",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "owned",
+      "card": {
+        "card_id": "base1-4",
+        "name": "Charizard",
+        "set": "base1",
+        "number": "4",
+        "imageUrl": "https://images.pokemontcg.io/base1/4.png"
+      }
+    },
+    {
+      "id": "pl-l7",
+      "pageId": "starter-p2",
+      "mergeId": null,
+      "row": 2,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base1-63",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "owned",
+      "card": {
+        "card_id": "base1-63",
+        "name": "Squirtle",
+        "set": "base1",
+        "number": "63",
+        "imageUrl": "https://images.pokemontcg.io/base1/63.png"
+      }
+    },
+    {
+      "id": "pl-l8",
+      "pageId": "starter-p2",
+      "mergeId": null,
+      "row": 2,
+      "col": 1,
+      "kind": "card",
+      "cardId": "base1-42",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "wanted",
+      "card": {
+        "card_id": "base1-42",
+        "name": "Wartortle",
+        "set": "base1",
+        "number": "42",
+        "imageUrl": "https://images.pokemontcg.io/base1/42.png"
+      }
+    },
+    {
+      "id": "pl-l9",
+      "pageId": "starter-p2",
+      "mergeId": null,
+      "row": 2,
+      "col": 2,
+      "kind": "card",
+      "cardId": "base1-2",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "owned",
+      "card": {
+        "card_id": "base1-2",
+        "name": "Blastoise",
+        "set": "base1",
+        "number": "2",
+        "imageUrl": "https://images.pokemontcg.io/base1/2.png"
+      }
+    },
+    {
+      "id": "pl-r1",
+      "pageId": "starter-p3",
+      "mergeId": null,
+      "row": 0,
+      "col": 2,
+      "kind": "card",
+      "cardId": "base1-58",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "owned",
+      "card": {
+        "card_id": "base1-58",
+        "name": "Pikachu",
+        "set": "base1",
+        "number": "58",
+        "imageUrl": "https://images.pokemontcg.io/base1/58.png"
+      }
+    },
+    {
+      "id": "pl-r2",
+      "pageId": "starter-p3",
+      "mergeId": null,
+      "row": 1,
+      "col": 2,
+      "kind": "card",
+      "cardId": "base1-14",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "owned",
+      "card": {
+        "card_id": "base1-14",
+        "name": "Raichu",
+        "set": "base1",
+        "number": "14",
+        "imageUrl": "https://images.pokemontcg.io/base1/14.png"
+      }
+    },
+    {
+      "id": "pl-r3",
+      "pageId": "starter-p3",
+      "mergeId": null,
+      "row": 2,
+      "col": 0,
+      "kind": "card",
+      "cardId": "base1-11",
+      "assetKind": null,
+      "uploadAssetId": null,
+      "packItemId": null,
+      "transform": {},
+      "ownership": "wanted",
+      "card": {
+        "card_id": "base1-11",
+        "name": "Nidoking",
+        "set": "base1",
+        "number": "11",
+        "imageUrl": "https://images.pokemontcg.io/base1/11.png"
       }
     }
   ]

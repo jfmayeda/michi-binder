@@ -8,10 +8,13 @@ import { ensurePlaygroundBinder } from '@/persistence/playgroundBinder';
 export default function PlaygroundPage() {
   const router = useRouter();
   useEffect(() => {
-    void (async () => {
-      const binder = await ensurePlaygroundBinder(createBrowserPlaygroundAdapter());
+    void ensurePlaygroundBinder(createBrowserPlaygroundAdapter()).then((binder) => {
       router.replace(`/studio/${binder.id}`);
-    })();
+    });
   }, [router]);
-  return <p className="p-8 text-ink-soft">Opening your scrap page…</p>;
+  return (
+    <main className="grid min-h-dvh place-items-center p-8">
+      <p className="gb-label">Opening your page…</p>
+    </main>
+  );
 }

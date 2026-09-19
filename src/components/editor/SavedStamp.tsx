@@ -1,34 +1,43 @@
 'use client';
 
+import { Marker } from '@/components/ui/Marker';
 import type { SaveStatus } from '@/state/saveQueue';
 
+/**
+ * Save state, always visible in the status area. Each state carries a glyph
+ * and words, and the two recoverable ones carry the recovery action with them.
+ */
 export function SavedStamp({ status, onRetry }: { status: SaveStatus; onRetry: () => void }) {
   if (status === 'saving') {
-    return <p className="text-xs tracking-wide text-ink-faint uppercase">Pressing the page…</p>;
+    return (
+      <span className="gb-label" role="status" aria-live="polite">
+        Saving…
+      </span>
+    );
   }
   if (status === 'offline') {
     return (
-      <p className="text-xs text-ink-soft">
-        Kept on this desk.{' '}
-        <button type="button" className="text-accent underline decoration-accent-soft" onClick={onRetry}>
-          Stamp when the line is back
+      <span className="flex items-center gap-1.5" role="status" aria-live="polite">
+        <Marker tone="note">Offline — kept on this device</Marker>
+        <button type="button" className="gb-btn gb-btn--quiet !min-h-7 !px-1.5 text-micro" onClick={onRetry}>
+          Retry
         </button>
-      </p>
+      </span>
     );
   }
   if (status === 'error') {
     return (
-      <p className="text-xs text-accent-ink">
-        Couldn’t stamp.{' '}
-        <button type="button" className="underline decoration-accent-soft" onClick={onRetry}>
+      <span className="flex items-center gap-1.5" role="status" aria-live="polite">
+        <Marker tone="wanted">Could not save</Marker>
+        <button type="button" className="gb-btn gb-btn--quiet !min-h-7 !px-1.5 text-micro" onClick={onRetry}>
           Try again
         </button>
-      </p>
+      </span>
     );
   }
   return (
-    <p className="inline-flex items-center gap-1 rounded-sm border border-accent-soft bg-accent-soft/40 px-2 py-0.5 text-xs tracking-wide text-accent-ink uppercase shadow-stamp">
-      Stamped
-    </p>
+    <span role="status" aria-live="polite">
+      <Marker tone="owned">Saved on this device</Marker>
+    </span>
   );
 }

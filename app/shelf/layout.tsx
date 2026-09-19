@@ -5,28 +5,37 @@ import { useRouter } from 'next/navigation';
 import { createBrowserSupabase } from '@/persistence/supabaseBrowser';
 
 /**
- * Shelf is authed-only in every build. Anonymous visitors go to landing / playground.
+ * The shelf needs an account. Without one — including in a build with no
+ * Supabase keys — visitors go back to the landing page, which offers the
+ * on-device page that does work.
  */
 export default function ShelfLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [ok, setOk] = useState(false);
 
   useEffect(() => {
-    void (async () => {
-      const supabase = createBrowserSupabase();
-      if (!supabase) {
-        router.replace('/');
-        return;
-      }
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        router.replace('/');
-        return;
-      }
-      setOk(true);
-    })();
+    let alive = true;
+    const supabase = createBrowserSupabase();
+    if (!supabase) {
+      router.replace('/');
+      return;
+    }
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!alive) return;
+      if (!data.session) router.replace('/');
+      else setOk(true);
+    });
+    return () => {
+      alive = false;
+    };
   }, [router]);
 
-  if (!ok) return <p className="p-8 text-ink-soft">Checking the desk drawer…</p>;
+  if (!ok) {
+    return (
+      <main className="grid min-h-dvh place-items-center p-8">
+        <p className="gb-label">Checking your account…</p>
+      </main>
+    );
+  }
   return children;
 }

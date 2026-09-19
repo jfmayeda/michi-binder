@@ -50,7 +50,9 @@ export function Dialog({
   useEffect(() => {
     returnTo.current = document.activeElement as HTMLElement | null;
     const panel = panelRef.current;
-    panel?.querySelector<HTMLElement>(FOCUSABLE)?.focus() ?? panel?.focus();
+    const first = panel?.querySelector<HTMLElement>(FOCUSABLE);
+    if (first) first.focus();
+    else panel?.focus();
 
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {

@@ -11,13 +11,15 @@ export function anonymousMayAddPage(pageCount: number) {
 export async function ensurePlaygroundBinder(adapter: PersistenceAdapter): Promise<Binder> {
   const existing = await adapter.getBinder(PLAYGROUND_BINDER_ID);
   if (existing) return existing;
+  // One page, so single-page mode: a facing pair would leave half the binder
+  // permanently blank. The facing-spread story lives on the landing page.
   const binder = createBinder({
     id: PLAYGROUND_BINDER_ID,
     layoutId: '3x3',
-    pageMode: 'double',
+    pageMode: 'single',
     pageCount: 1,
   });
-  binder.title = 'Playground';
+  binder.title = 'My page';
   await adapter.saveBinder(binder);
   return binder;
 }

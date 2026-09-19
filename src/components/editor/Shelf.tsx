@@ -3,13 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { LayoutId, PageMode } from '@/domain/layouts';
+import { LAYOUTS as LAYOUT_DEFS } from '@/domain/layouts';
 import type { Binder } from '@/domain/types';
 import { useConfirmWithUndo } from '@/components/editor/ConfirmWithUndoToast';
 import { useStudioStore } from '@/state/studioStore';
 import { pageTemplates } from '@/templates/catalog';
 import { cloneTemplatePage } from '@/templates/clone';
+import { Panel } from '@/components/ui/Panel';
 
-const LAYOUTS: LayoutId[] = ['2x2', '3x3', '4x3', '4x4'];
+const LAYOUT_IDS: LayoutId[] = ['2x2', '3x3', '4x3', '4x4'];
 
 export function Shelf() {
   const router = useRouter();
@@ -24,119 +26,126 @@ export function Shelf() {
     void refresh();
   }, [refresh]);
 
+  const layout = LAYOUT_DEFS[layoutId];
+
   return (
-    <main className="mx-auto max-w-4xl px-6 py-12">
-      <p className="font-display text-xs tracking-[0.2em] text-accent uppercase">The shelf</p>
-      <h1 className="font-display mt-2 text-4xl text-ink">Your binders</h1>
-      <p className="mt-2 text-ink-soft">
-        Layout and page mode are chosen once, like buying a physical binder — they stay put.
-      </p>
+    <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+      <header className="mb-6">
+        <p className="gb-label">The shelf</p>
+        <h1 className="mt-1 text-3xl">Your binders</h1>
+        <p className="mt-2 max-w-prose text-ink-soft">
+          Pocket layout and single-or-facing pages are picked once, the way you pick a physical
+          binder. They stay as they are for the life of the binder.
+        </p>
+      </header>
 
-      <form
-        className="mt-8 grid gap-3 rounded-lg border border-rule bg-paper-sun p-4 shadow-page sm:grid-cols-2"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          const picked = pageTemplates.find((t) => t.id === templateId);
-          if (picked) {
-            const cloned = cloneTemplatePage(picked, 1, crypto.randomUUID());
-            cloned.title = title;
-            await useStudioStore.getState().restore(cloned);
-            await refresh();
-            router.push(`/studio/${cloned.id}`);
-            return;
-          }
-          const binder = await create({ title, layoutId, pageMode });
-          router.push(`/studio/${binder.id}`);
-        }}
-      >
-        <label className="flex flex-col gap-1 text-sm text-ink-soft">
-          Title
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="rounded-md border border-rule bg-paper px-3 py-2 text-ink shadow-stamp"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm text-ink-soft">
-          Layout
-          <select
-            value={layoutId}
-            onChange={(e) => setLayoutId(e.target.value as LayoutId)}
-            className="rounded-md border border-rule bg-paper px-3 py-2 text-ink shadow-stamp"
-          >
-            {LAYOUTS.map((id) => (
-              <option key={id} value={id}>
-                {id}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-1 text-sm text-ink-soft">
-          Page mode
-          <select
-            value={pageMode}
-            onChange={(e) => setPageMode(e.target.value as PageMode)}
-            className="rounded-md border border-rule bg-paper px-3 py-2 text-ink shadow-stamp"
-          >
-            <option value="double">Double (facing spreads)</option>
-            <option value="single">Single</option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-1 text-sm text-ink-soft sm:col-span-2">
-          Start from a draft template
-          <select
-            value={templateId}
-            onChange={(e) => setTemplateId(e.target.value)}
-            className="rounded-md border border-rule bg-paper px-3 py-2 text-ink shadow-stamp"
-          >
-            <option value="">Blank binder</option>
-            {pageTemplates.map((tpl) => (
-              <option key={tpl.id} value={tpl.id}>
-                {tpl.title}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button
-          type="submit"
-          className="self-end rounded-md bg-accent px-4 py-2 font-display text-paper-sun shadow-stamp sm:col-span-2"
+      <Panel title="Start a binder" stepped>
+        <form
+          className="grid gap-3 sm:grid-cols-2"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const picked = pageTemplates.find((t) => t.id === templateId);
+            if (picked) {
+              const cloned = cloneTemplatePage(picked, 1, crypto.randomUUID());
+              cloned.title = title;
+              await restore(cloned);
+              await refresh();
+              router.push(`/studio/${cloned.id}`);
+              return;
+            }
+            const binder = await create({ title, layoutId, pageMode });
+            router.push(`/studio/${binder.id}`);
+          }}
         >
-          Start a binder
-        </button>
-      </form>
+          <label className="grid gap-1 sm:col-span-2">
+            <span className="gb-label">Name</span>
+            <input value={title} onChange={(e) => setTitle(e.target.value)} className="gb-input" />
+          </label>
+          <label className="grid gap-1">
+            <span className="gb-label">Pockets per page</span>
+            <select
+              value={layoutId}
+              onChange={(e) => setLayoutId(e.target.value as LayoutId)}
+              className="gb-select"
+            >
+              {LAYOUT_IDS.map((id) => (
+                <option key={id} value={id}>
+                  {LAYOUT_DEFS[id].rows} × {LAYOUT_DEFS[id].cols}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1">
+            <span className="gb-label">How pages show</span>
+            <select
+              value={pageMode}
+              onChange={(e) => setPageMode(e.target.value as PageMode)}
+              className="gb-select"
+            >
+              <option value="double">Two facing pages</option>
+              <option value="single">One page at a time</option>
+            </select>
+          </label>
+          <label className="grid gap-1 sm:col-span-2">
+            <span className="gb-label">Or start from a draft template</span>
+            <select
+              value={templateId}
+              onChange={(e) => setTemplateId(e.target.value)}
+              className="gb-select"
+            >
+              <option value="">Empty binder</option>
+              {pageTemplates.map((tpl) => (
+                <option key={tpl.id} value={tpl.id}>
+                  {tpl.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="gb-num text-mini text-ink-soft sm:col-span-2">
+            A page will be {layout.cols * 7} × {layout.rows * 9.5} cm of pockets.
+          </p>
+          <button type="submit" className="gb-btn gb-btn--primary sm:col-span-2">
+            Start it
+          </button>
+        </form>
+      </Panel>
 
-      <ul className="mt-10 grid gap-4 sm:grid-cols-2">
-        {!loaded ? <li className="text-ink-soft">Dusting the shelf…</li> : null}
-        {loaded && binders.length === 0 ? (
-          <li className="text-ink-soft">Empty shelf. Start one above — it stays on this device.</li>
-        ) : null}
+      <h2 className="gb-label mt-8 mb-2">On the shelf</h2>
+      {!loaded ? <p className="text-ink-soft">Looking…</p> : null}
+      {loaded && binders.length === 0 ? (
+        <Panel title="Empty shelf">
+          <p className="text-sm text-ink-soft">
+            Nothing here yet. Start one above — it is kept in this browser.
+          </p>
+        </Panel>
+      ) : null}
+
+      <ul className="grid gap-3 sm:grid-cols-2">
         {binders.map((b) => (
-          <li
-            key={b.id}
-            className="flex items-stretch overflow-hidden rounded-lg border border-rule bg-paper-sun shadow-page"
-          >
-            <div
-              className="w-8 texture-linen"
-              style={{ backgroundColor: 'var(--color-accent-soft)' }}
-              aria-hidden
-            />
-            <div className="flex flex-1 flex-col gap-2 p-4">
-              <button
-                type="button"
-                className="font-display text-left text-xl text-ink"
-                onClick={() => router.push(`/studio/${b.id}`)}
-              >
-                {b.title}
-              </button>
-              <p className="text-xs text-ink-faint">
-                {b.layoutId} · {b.pageMode} · {b.pages.length} pages
+          <li key={b.id}>
+            <Panel
+              title={b.title}
+              count={`${b.pages.length} ${b.pages.length === 1 ? 'page' : 'pages'}`}
+              stepped
+            >
+              <p className="gb-num text-mini text-ink-soft">
+                {LAYOUT_DEFS[b.layoutId].rows} × {LAYOUT_DEFS[b.layoutId].cols} pockets ·{' '}
+                {b.pageMode === 'double' ? 'facing pages' : 'one page at a time'} ·{' '}
+                {b.placements.length} placed
               </p>
-              <div className="flex gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   type="button"
-                  className="text-sm text-accent"
+                  className="gb-btn gb-btn--primary"
+                  onClick={() => router.push(`/studio/${b.id}`)}
+                >
+                  Open
+                </button>
+                <button
+                  type="button"
+                  className="gb-btn"
                   onClick={async () => {
-                    const next = window.prompt('Rename binder', b.title);
+                    const next = window.prompt('Rename this binder', b.title);
                     if (next) await rename(b.id, next);
                   }}
                 >
@@ -144,12 +153,12 @@ export function Shelf() {
                 </button>
                 <button
                   type="button"
-                  className="text-sm text-accent-ink"
+                  className="gb-btn"
                   onClick={() =>
                     ask({
-                      title: 'Put this binder away?',
-                      body: `“${b.title}” will leave the shelf. You can undo for a moment after.`,
-                      confirmLabel: 'Delete',
+                      title: `Put “${b.title}” away?`,
+                      body: 'It leaves the shelf with everything on its pages.',
+                      confirmLabel: 'Delete it',
                       toastMessage: 'Binder removed.',
                       snapshot: b,
                       apply: async () => {
@@ -164,14 +173,12 @@ export function Shelf() {
                   Delete
                 </button>
               </div>
-            </div>
+            </Panel>
           </li>
         ))}
       </ul>
 
       {host}
-
-      {/* TODO T5.3: replace this dev-only shelf gate with a real session check. */}
     </main>
   );
 }

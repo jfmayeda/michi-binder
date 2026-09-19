@@ -14,61 +14,80 @@ import { VirtualGrid } from '@/components/shared/VirtualGrid';
 import { CardThumb } from './CardThumb';
 import themeCollections from '@/templates/theme-collections.json';
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="flex min-w-0 flex-col gap-1 text-xs text-ink-soft">
-      <span className="font-display tracking-wide uppercase">{label}</span>
-      {children}
-    </label>
-  );
+const SWATCHES = [
+  { name: 'Pink', hue: 330, color: '#e2a0b6' },
+  { name: 'Blue', hue: 210, color: '#7ba4cd' },
+  { name: 'Yellow', hue: 52, color: '#dfc260' },
+  { name: 'Green', hue: 140, color: '#84b78f' },
+  { name: 'Orange', hue: 28, color: '#d98a55' },
+  { name: 'Purple', hue: 280, color: '#9d85b8' },
+];
+
+function activeFilterCount(q: SearchQuery): number {
+  return [q.setId, q.speciesDex, q.type, q.artist, q.rarity, q.era, q.hueDeg].filter(
+    (v) => v !== undefined && v !== '',
+  ).length;
 }
 
-const selectClass =
-  'rounded-md border border-rule bg-paper-sun px-2 py-1.5 text-sm text-ink shadow-stamp outline-none focus:border-accent';
-
+/**
+ * The card box.
+ *
+ * Name search is the primary control and always visible. Everything else lives
+ * behind one "More filters" disclosure that reports how many are on, so the
+ * panel never opens as a wall of selects. The catalog loads as soon as the
+ * panel mounts, so the results area always has a state to show — results,
+ * loading, empty, or an error — rather than sitting blank until something is
+ * focused, which is what the previous build did.
+ */
 export function SearchPanel({
   onSelectCard,
+  selectedId: selectedIdProp,
   wrapDnd = true,
-  compact = false,
+  columns = 2,
 }: {
   onSelectCard?: (hit: CardHit) => void;
+  selectedId?: string | null;
   wrapDnd?: boolean;
-  compact?: boolean;
+  columns?: number;
 }) {
   const [catalog, setCatalog] = useState<LoadedCatalog | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [text, setText] = useState('');
   const [query, setQuery] = useState<SearchQuery>({});
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'ready'>('idle');
+  const [ownSelected, setOwnSelected] = useState<string | null>(null);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [tab, setTab] = useState<'search' | 'vibe'>('search');
+  const [showFilters, setShowFilters] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
-  const load = useCallback(async () => {
-    if (catalog) return catalog;
-    setStatus('loading');
-    const loaded = await ensureCatalog();
-    setCatalog(loaded);
-    setStatus('ready');
-    return loaded;
-  }, [catalog]);
+  const selectedId = selectedIdProp !== undefined ? selectedIdProp : ownSelected;
 
+  // The catalog is an external system: subscribe to it and set state from the
+  // settled promise, never synchronously from the effect body.
   useEffect(() => {
-    const onFirst = () => {
-      void load().catch((err: unknown) => {
+    let alive = true;
+    ensureCatalog().then(
+      (loaded) => {
+        if (!alive) return;
+        setCatalog(loaded);
+        setStatus('ready');
+        setError(null);
+      },
+      (err: unknown) => {
+        if (!alive) return;
+        setStatus('error');
         setError(err instanceof Error ? err.message : 'Could not open the card box.');
-        setStatus('idle');
-      });
+      },
+    );
+    return () => {
+      alive = false;
     };
-    const input = document.getElementById('card-search-text');
-    input?.addEventListener('focus', onFirst, { once: true });
-    return () => input?.removeEventListener('focus', onFirst);
-  }, [load]);
+  }, [attempt]);
+
+  const load = useCallback(() => {
+    setStatus('loading');
+    setAttempt((a) => a + 1);
+  }, []);
 
   const facets = useMemo(
     () => (catalog ? uniqueFacets(catalog.index, catalog.dexSpecies) : null),
@@ -80,255 +99,316 @@ export function SearchPanel({
     return searchCatalog(catalog, { ...query, text }, 240);
   }, [catalog, query, text]);
 
-  const beginSearch = () => {
-    void load().catch((err: unknown) => {
-      setError(err instanceof Error ? err.message : 'Could not open the card box.');
-    });
+  const filterCount = activeFilterCount(query);
+  const clearAll = () => {
+    setQuery({});
+    setText('');
   };
 
-  const body = (
-      <section className="flex h-full min-h-0 flex-col gap-4 bg-paper p-4 texture-paper">
-        <header>
-          <p className="font-display text-xs tracking-[0.2em] text-accent uppercase">
-            Card box
-          </p>
-          {compact ? null : <h2 className="font-display text-2xl text-ink">Search the catalog</h2>}
-          <div className="mt-2 flex gap-2">
-            <button
-              type="button"
-              className={`rounded-md px-2.5 py-1 text-xs shadow-stamp ${tab === 'search' ? 'bg-accent text-paper-sun' : 'bg-paper-sun text-ink border border-rule'}`}
-              onClick={() => setTab('search')}
-            >
-              Search
-            </button>
-            <button
-              type="button"
-              className={`rounded-md px-2.5 py-1 text-xs shadow-stamp ${tab === 'vibe' ? 'bg-accent text-paper-sun' : 'bg-paper-sun text-ink border border-rule'}`}
-              onClick={() => {
-                setTab('vibe');
-                beginSearch();
-              }}
-            >
-              Vibe
-            </button>
-          </div>
-        </header>
+  const results = (
+    <>
+      {status === 'error' ? (
+        <div className="gb-panel__body">
+          <p className="text-sm text-red-ink">{error}</p>
+          <button type="button" className="gb-btn mt-3" onClick={load}>
+            Try again
+          </button>
+        </div>
+      ) : null}
 
-        {tab === 'vibe' ? (
-          <div className="flex flex-col gap-3">
-            <p className="font-display text-xs tracking-wide text-ink-soft uppercase">Color</p>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { name: 'Pink', hue: 330, color: '#e89bb8' },
-                { name: 'Blue', hue: 210, color: '#6ba4d9' },
-                { name: 'Yellow', hue: 52, color: '#f4d03f' },
-                { name: 'Green', hue: 140, color: '#7dbf8a' },
-                { name: 'Orange', hue: 28, color: '#e07a3d' },
-                { name: 'Purple', hue: 280, color: '#9b7bb8' },
-              ].map((swatch) => (
+      {status === 'loading' ? (
+        <div className="gb-panel__body">
+          <div className="grid grid-cols-2 gap-2" aria-hidden="true">
+            {[0, 1, 2, 3].map((i) => (
+              <span key={i} className="aspect-[5/7] animate-pulse rounded-sm bg-paper-sunk" />
+            ))}
+          </div>
+          <p className="gb-label mt-3">Opening the card box…</p>
+        </div>
+      ) : null}
+
+      {status === 'ready' && hits.length === 0 ? (
+        <div className="gb-panel__body">
+          <p className="text-sm text-ink-soft">
+            {text || filterCount > 0
+              ? 'Nothing matches that yet. Try a shorter name, or clear a filter.'
+              : 'Type a name to start, or open the filters.'}
+          </p>
+          {text || filterCount > 0 ? (
+            <button type="button" className="gb-btn mt-3" onClick={clearAll}>
+              Clear search and filters
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {hits.length > 0 ? (
+        <VirtualGrid
+          items={hits}
+          columnCount={columns}
+          rowHeight={columns > 2 ? 240 : 212}
+          height={320}
+          fill
+          getKey={(hit) => hit.id}
+          renderItem={(hit) => (
+            <CardThumb
+              hit={hit}
+              selected={selectedId === hit.id}
+              onSelect={() => {
+                setOwnSelected(hit.id);
+                onSelectCard?.(hit);
+              }}
+            />
+          )}
+        />
+      ) : null}
+    </>
+  );
+
+  const body = (
+    <section className="flex h-full min-h-0 flex-col">
+      <div className="gb-tabs" role="tablist" aria-label="Card box">
+        <button
+          type="button"
+          role="tab"
+          className="gb-tab"
+          aria-selected={tab === 'search'}
+          onClick={() => setTab('search')}
+        >
+          Search
+        </button>
+        <button
+          type="button"
+          role="tab"
+          className="gb-tab"
+          aria-selected={tab === 'vibe'}
+          onClick={() => setTab('vibe')}
+        >
+          By vibe
+        </button>
+        <span className="gb-label ml-auto self-center pr-2">
+          {status === 'ready' ? `${hits.length} shown` : '—'}
+        </span>
+      </div>
+
+      {tab === 'search' ? (
+        <>
+          <div className="flex-none border-b border-rule p-3">
+            <label className="grid gap-1">
+              <span className="gb-label">Card name or artist</span>
+              <input
+                id="card-search-text"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Pikachu, Ken Sugimori…"
+                className="gb-input"
+                autoComplete="off"
+              />
+            </label>
+            <div className="mt-2 flex items-center gap-2">
+              <button
+                type="button"
+                className="gb-btn gb-btn--quiet !min-h-8 !px-2 text-mini"
+                aria-expanded={showFilters}
+                onClick={() => setShowFilters((s) => !s)}
+              >
+                <span aria-hidden="true">{showFilters ? '▾' : '▸'}</span>
+                More filters
+                {filterCount > 0 ? (
+                  <span className="gb-num ml-1 rounded-xs bg-ink px-1 text-micro text-paper-raised">
+                    {filterCount}
+                  </span>
+                ) : null}
+              </button>
+              {filterCount > 0 || text ? (
+                <button
+                  type="button"
+                  className="gb-btn gb-btn--quiet !min-h-8 !px-2 text-mini"
+                  onClick={clearAll}
+                >
+                  Clear
+                </button>
+              ) : null}
+            </div>
+
+            {showFilters ? (
+              <div className="mt-3 grid gap-2.5 border-t border-rule pt-3">
+                <label className="grid gap-1">
+                  <span className="gb-label">Set</span>
+                  <select
+                    className="gb-select"
+                    value={query.setId ?? ''}
+                    onChange={(e) =>
+                      setQuery((q) => ({ ...q, setId: e.target.value || undefined }))
+                    }
+                  >
+                    <option value="">Any set</option>
+                    {catalog?.sets.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="grid gap-1">
+                  <span className="gb-label">Pokémon</span>
+                  <select
+                    className="gb-select"
+                    value={query.speciesDex ?? ''}
+                    onChange={(e) =>
+                      setQuery((q) => ({
+                        ...q,
+                        speciesDex: e.target.value ? Number(e.target.value) : undefined,
+                      }))
+                    }
+                  >
+                    <option value="">Any Pokémon</option>
+                    {facets?.species.map((s) => (
+                      <option key={s.dex} value={s.dex}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="grid gap-1">
+                  <span className="gb-label">Artist</span>
+                  <select
+                    className="gb-select"
+                    value={query.artist ?? ''}
+                    onChange={(e) =>
+                      setQuery((q) => ({ ...q, artist: e.target.value || undefined }))
+                    }
+                  >
+                    <option value="">Any artist</option>
+                    {facets?.artist.map((a) => (
+                      <option key={a} value={a}>
+                        {a}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="grid gap-1">
+                    <span className="gb-label">Rarity</span>
+                    <select
+                      className="gb-select"
+                      value={query.rarity ?? ''}
+                      onChange={(e) =>
+                        setQuery((q) => ({ ...q, rarity: e.target.value || undefined }))
+                      }
+                    >
+                      <option value="">Any</option>
+                      {facets?.rarity.map((r) => (
+                        <option key={r} value={r}>
+                          {r}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="grid gap-1">
+                    <span className="gb-label">Era</span>
+                    <select
+                      className="gb-select"
+                      value={query.era ?? ''}
+                      onChange={(e) =>
+                        setQuery((q) => ({ ...q, era: e.target.value || undefined }))
+                      }
+                    >
+                      <option value="">Any</option>
+                      {facets?.era.map((r) => (
+                        <option key={r} value={r}>
+                          {r}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <div>
+                  <p className="gb-label mb-1.5">Energy type</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(facets?.type ?? ['Grass', 'Fire', 'Water', 'Lightning', 'Psychic']).map(
+                      (type) => (
+                        <button
+                          key={type}
+                          type="button"
+                          className="gb-chip"
+                          aria-pressed={query.type === type}
+                          onClick={() =>
+                            setQuery((q) => ({ ...q, type: q.type === type ? undefined : type }))
+                          }
+                        >
+                          {type}
+                        </button>
+                      ),
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+          <div className="flex min-h-0 flex-1 flex-col">{results}</div>
+        </>
+      ) : (
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="gb-panel__body">
+            <p className="gb-label mb-2">Dominant colour</p>
+            <div className="flex flex-wrap gap-1.5">
+              {SWATCHES.map((swatch) => (
                 <button
                   key={swatch.name}
                   type="button"
+                  className="gb-chip"
+                  aria-pressed={query.hueDeg === swatch.hue}
                   onClick={() => {
-                    beginSearch();
-                    setQuery((q) => ({ ...q, hueDeg: swatch.hue, text: undefined }));
+                    setTab('search');
                     setText('');
+                    setQuery((q) => ({
+                      ...q,
+                      hueDeg: q.hueDeg === swatch.hue ? undefined : swatch.hue,
+                    }));
                   }}
-                  className="flex items-center gap-2 rounded-md border border-rule bg-paper-sun px-2 py-1 text-xs text-ink shadow-stamp"
                 >
                   <span
-                    className="inline-block h-4 w-4 rounded-sm border border-rule"
+                    aria-hidden="true"
+                    className="inline-block h-3 w-3 rounded-xs border border-ink"
                     style={{ backgroundColor: swatch.color }}
                   />
                   {swatch.name}
                 </button>
               ))}
             </div>
-            <p className="font-display text-xs tracking-wide text-ink-soft uppercase">Themes</p>
-            <ul className="grid gap-2">
+            <p className="mt-2 text-micro text-ink-faint">
+              Colours come from art extracted for each card, not from its energy type.
+            </p>
+
+            <p className="gb-label mt-4 mb-2">Starting points</p>
+            <ul className="grid gap-1.5">
               {themeCollections.collections.map((collection) => (
-                <li key={collection.id} className="rounded-md border border-rule bg-paper-sun p-2 shadow-stamp">
-                  <p className="font-display text-sm text-ink">{collection.name}</p>
-                  <p className="text-xs text-ink-soft">{collection.description}</p>
+                <li key={collection.id}>
                   <button
                     type="button"
-                    className="mt-1 text-xs text-accent"
+                    className="gb-row w-full border border-rule"
                     onClick={() => {
-                      beginSearch();
                       setTab('search');
+                      setQuery({});
                       setText(collection.searchText);
                     }}
                   >
-                    Open in search
+                    <span className="min-w-0">
+                      <span className="block text-sm font-semibold">{collection.name}</span>
+                      <span className="block text-micro text-ink-soft">
+                        {collection.description}
+                      </span>
+                    </span>
                   </button>
                 </li>
               ))}
             </ul>
-            <p className="text-xs text-ink-faint">
-              Species and artist filters on the Search tab are the vibe entry points into the
-              ordinary box.
-            </p>
-          </div>
-        ) : null}
-
-        {tab === 'search' ? (
-        <>
-        <div className={`grid gap-3 ${compact ? '' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
-          <Field label="Name or artist">
-            <input
-              id="card-search-text"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onFocus={beginSearch}
-              placeholder="Pikachu, Ken Sugimori…"
-              className={`${selectClass} w-full`}
-            />
-          </Field>
-          <Field label="Set">
-            <select
-              className={selectClass}
-              value={query.setId ?? ''}
-              onChange={(e) => setQuery((q) => ({ ...q, setId: e.target.value || undefined }))}
-              onFocus={beginSearch}
-            >
-              <option value="">Any set</option>
-              {catalog?.sets.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Species">
-            <select
-              className={selectClass}
-              value={query.speciesDex ?? ''}
-              onChange={(e) =>
-                setQuery((q) => ({
-                  ...q,
-                  speciesDex: e.target.value ? Number(e.target.value) : undefined,
-                }))
-              }
-              onFocus={beginSearch}
-            >
-              <option value="">Any species</option>
-              {facets?.species.map((s) => (
-                <option key={s.dex} value={s.dex}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Artist">
-            <select
-              className={selectClass}
-              value={query.artist ?? ''}
-              onChange={(e) => setQuery((q) => ({ ...q, artist: e.target.value || undefined }))}
-              onFocus={beginSearch}
-            >
-              <option value="">Any artist</option>
-              {facets?.artist.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <p className="font-display text-xs tracking-wide text-ink-soft uppercase">Type</p>
-          <div className="flex flex-wrap gap-1.5">
-            {(facets?.type ?? ['Grass', 'Fire', 'Water', 'Lightning', 'Psychic', 'Fighting']).map(
-              (type) => {
-                const on = query.type === type;
-                return (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => {
-                      beginSearch();
-                      setQuery((q) => ({ ...q, type: on ? undefined : type }));
-                    }}
-                    className={`rounded-md px-2.5 py-1 text-xs shadow-stamp ${
-                      on ? 'bg-accent text-paper-sun' : 'bg-paper-sun text-ink border border-rule'
-                    }`}
-                  >
-                    {type}
-                  </button>
-                );
-              },
-            )}
           </div>
         </div>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Rarity">
-            <select
-              className={selectClass}
-              value={query.rarity ?? ''}
-              onChange={(e) => setQuery((q) => ({ ...q, rarity: e.target.value || undefined }))}
-              onFocus={beginSearch}
-            >
-              <option value="">Any rarity</option>
-              {facets?.rarity.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Era">
-            <select
-              className={selectClass}
-              value={query.era ?? ''}
-              onChange={(e) => setQuery((q) => ({ ...q, era: e.target.value || undefined }))}
-              onFocus={beginSearch}
-            >
-              <option value="">Any era</option>
-              {facets?.era.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </div>
-        </>
-        ) : null}
-
-        {error ? <p className="text-sm text-accent-ink">{error}</p> : null}
-
-        {status === 'loading' ? (
-          <p className="text-ink-soft">Shuffling the card box…</p>
-        ) : null}
-
-        {status === 'ready' && hits.length === 0 ? (
-          <p className="text-ink-soft">
-            Nothing in the box matches that vibe yet. Try a broader name, or lift a filter.
-          </p>
-        ) : null}
-
-        {hits.length > 0 ? (
-          <VirtualGrid
-            items={hits}
-            columnCount={compact ? 2 : 4}
-            rowHeight={compact ? 168 : 210}
-            height={compact ? 280 : 520}
-            getKey={(hit) => hit.id}
-            renderItem={(hit) => (
-              <CardThumb
-                hit={hit}
-                selected={selectedId === hit.id}
-                onSelect={() => {
-                  setSelectedId(hit.id);
-                  onSelectCard?.(hit);
-                }}
-              />
-            )}
-          />
-        ) : null}
-      </section>
+      )}
+    </section>
   );
+
   return wrapDnd ? <DndContext>{body}</DndContext> : body;
 }
