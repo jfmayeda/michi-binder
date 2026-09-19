@@ -193,7 +193,7 @@ export function StyleGuide() {
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="grid gap-1">
               <span className="gb-label">Name or artist</span>
-              <input className="gb-input" placeholder="Pikachu, Ken Sugimori…" />
+              <input className="gb-input" aria-label="Name or artist" placeholder="Pikachu, Ken Sugimori…" />
             </label>
             <label className="grid gap-1">
               <span className="gb-label">Set</span>

@@ -160,8 +160,14 @@ export function MediaLibrary({
           </ul>
         )}
 
+        {packs.length > 0 ? (
+          <p className="mt-5 mb-1 text-micro text-ink-faint">
+            Placeholder public-domain pieces that ship with the app, so there is something to
+            try before you bring your own.
+          </p>
+        ) : null}
         {packs.map((pack) => (
-          <div key={pack.id} className="mt-4">
+          <div key={pack.id} className="mt-3">
             <p className="gb-label mb-2">{pack.title}</p>
             <ul className="grid grid-cols-2 gap-2">
               {pack.items.map((item) => (

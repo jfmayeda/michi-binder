@@ -660,6 +660,7 @@
 
   .gb-cardfallback__name {
     font-size: clamp(0.5rem, 13cqw, 0.8125rem);
+    overflow-wrap: anywhere;
     line-height: 1.15;
     font-weight: 600;
   }

@@ -43,6 +43,7 @@ export function Inspector({
   onClearPage,
   onDeletePage,
   currentPages,
+  cardNames,
 }: {
   binder: Binder;
   selection: SelectionInfo;
@@ -56,6 +57,7 @@ export function Inspector({
   onClearPage: (page: Page) => void;
   onDeletePage: (page: Page) => void;
   currentPages: Page[];
+  cardNames: Record<string, string>;
 }) {
   const layout = LAYOUTS[binder.layoutId];
   const { single, count, mergeProblem, mergeShape } = selection;
@@ -232,9 +234,11 @@ export function Inspector({
         ) : (
           <ul className="grid gap-1">
             {wanted.map((p) => (
-              <li key={p.id} className="gb-num flex items-center gap-2 text-mini">
+              <li key={p.id} className="flex items-center gap-2 text-mini">
                 <Marker tone="wanted">Want</Marker>
-                <span className="truncate">{p.cardId}</span>
+                <span className="truncate">
+                  {(p.cardId && cardNames[p.cardId]) || p.cardId}
+                </span>
               </li>
             ))}
           </ul>

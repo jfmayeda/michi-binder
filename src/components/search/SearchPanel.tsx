@@ -202,6 +202,7 @@ export function SearchPanel({
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Pikachu, Ken Sugimori…"
                 className="gb-input"
+                aria-label="Card name or artist"
                 autoComplete="off"
               />
             </label>

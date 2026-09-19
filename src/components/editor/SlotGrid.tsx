@@ -2,7 +2,7 @@
 
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import type { CSSProperties, PointerEvent, ReactNode } from 'react';
-import { LAYOUTS } from '@/domain/layouts';
+import { LAYOUTS, SLOT_CM } from '@/domain/layouts';
 import { cellsForMerge } from '@/domain/slots';
 import { assemblyAnnotation } from '@/domain/split';
 import type { Binder, Merge, Page, Placement } from '@/domain/types';
@@ -236,6 +236,15 @@ export function SlotGrid({
                 number={number}
                 seed={placement.cardId}
               />
+            </span>
+          );
+        } else if (!placement && (cell.colSpan > 1 || cell.rowSpan > 1)) {
+          body = (
+            <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 p-2 text-center">
+              <span className="gb-label">Art pocket</span>
+              <span className="gb-num text-mini text-ink-soft">
+                {cell.colSpan * SLOT_CM.width} × {cell.rowSpan * SLOT_CM.height} cm
+              </span>
             </span>
           );
         } else if (placement?.kind === 'art') {

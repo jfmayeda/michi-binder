@@ -6,7 +6,9 @@ test('AT-9: landing does not request cards-index.json', async ({ page }) => {
     if (req.url().includes('/data/cards-index.json')) indexRequests.push(req.url());
   });
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Michi Binder Studio' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Design the spread before you sleeve it' }),
+  ).toBeVisible();
   await page.waitForTimeout(500);
   expect(indexRequests, 'landing must not fetch the card index').toEqual([]);
 });

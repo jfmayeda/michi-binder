@@ -46,6 +46,7 @@ import { Inspector, type SelectionInfo } from '@/components/editor/Inspector';
 import { SavedStamp } from '@/components/editor/SavedStamp';
 import { useConfirmWithUndo } from '@/components/editor/ConfirmWithUndoToast';
 import { useBinderHistory } from '@/components/editor/useBinderHistory';
+import { useCardNames } from '@/components/editor/useCardNames';
 import { BinderFrame } from '@/components/binder/BinderFrame';
 import { Panel } from '@/components/ui/Panel';
 import { PromptStrip } from '@/components/ui/PromptStrip';
@@ -187,11 +188,19 @@ export function Studio() {
     return 1 + Math.ceil(Math.max(0, maxPos - 1) / 2);
   }, [binder]);
 
+  const placedCardIds = useMemo(
+    () =>
+      binder
+        ? [...new Set(binder.placements.map((p) => p.cardId).filter((id): id is string => !!id))]
+        : [],
+    [binder],
+  );
+  const resolvedNames = useCardNames(placedCardIds);
   const cardNames = useMemo(() => {
-    const names: Record<string, string> = {};
+    const names: Record<string, string> = { ...resolvedNames };
     if (pending?.source === 'card') names[pending.card.id] = pending.card.name;
     return names;
-  }, [pending]);
+  }, [pending, resolvedNames]);
 
   const artUrls = useMemo(() => {
     const map: Record<string, string> = {};
@@ -851,7 +860,7 @@ export function Studio() {
             <BinderFrame
               layoutId={binder.layoutId}
               mode={binder.pageMode}
-              maxWidth={binder.pageMode === 'double' ? '52rem' : '26rem'}
+              maxWidth={binder.pageMode === 'double' ? '56rem' : '31rem'}
               left={leaf(leftPage, 'Inside cover')}
               right={leaf(rightPage ?? singlePage, 'Back cover')}
             />
@@ -909,6 +918,7 @@ export function Studio() {
               binder={binder}
               selection={selection}
               currentPages={currentPages}
+              cardNames={cardNames}
               onMerge={commitMerge}
               onUnmerge={requestUnmerge}
               onRemoveCard={(id) => {
