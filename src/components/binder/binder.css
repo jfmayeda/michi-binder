@@ -1,71 +1,113 @@
+/* The physical object.
+ *
+ * Every dimension here derives from the real thing: a pocket is 7 x 9.5 cm
+ * (domain/layouts.ts SLOT_CM), so a page is (cols x 7) by (rows x 9.5) and a
+ * spread is two of those either side of the rings. The previous build hardcoded
+ * a 2.05:1 spread, which is ~39% too wide for a 3x3 page and squashed every
+ * pocket — the "pages compacted" failure in docs/rebuild-face.md.
+ *
+ * --page-cols and --page-rows are set from the binder's layout in React.
+ */
+
 @property --flip {
   syntax: '<number>';
   inherits: true;
   initial-value: 0;
 }
 
-.binder-desk {
-  min-height: 100dvh;
+@layer components {
+.binder {
+  --page-cols: 3;
+  --page-rows: 3;
+  --slot-w: 7;
+  --slot-h: 9.5;
+  --page-aspect: calc((var(--page-cols) * var(--slot-w)) / (var(--page-rows) * var(--slot-h)));
+  --spine-w: clamp(14px, 1.6vw, 26px);
+  --shell: clamp(6px, 0.7vw, 12px);
+
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  gap: 1.5rem;
-  padding: 2rem 1rem 3rem;
-  background-color: var(--color-paper-deep);
-  background-image: var(--texture-linen), var(--texture-paper);
+  width: 100%;
+  max-width: var(--binder-max, 64rem);
+  padding: var(--shell);
+  border-radius: 3px;
+  background:
+    linear-gradient(
+      100deg,
+      var(--color-binder-shell) 0%,
+      var(--color-binder-shell-lit) 48%,
+      var(--color-binder-shell) 72%
+    );
+  box-shadow: var(--shadow-binder);
+  border: 1px solid var(--color-binder-edge);
 }
 
-.binder-hint {
-  max-width: 40rem;
-  text-align: center;
-  color: var(--color-ink-soft);
-  font-size: 0.95rem;
-}
-
-.binder-stage {
-  perspective: 2200px;
-  perspective-origin: 50% 48%;
-}
-
-.binder-book {
+/* The leaf itself. aspect-ratio does the work, so the page can never be
+   stretched by its container. */
+.binder-page {
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr 18px 1fr;
-  width: min(92vw, 1080px);
-  aspect-ratio: 2.05 / 1;
-  transform-style: preserve-3d;
-  overflow: visible;
-  filter: drop-shadow(0 18px 28px rgb(58 42 28 / 0.28));
+  aspect-ratio: var(--page-aspect);
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--color-binder-page);
+  container-type: inline-size;
 }
 
-.binder-book--single,
-.binder-2d--single {
-  grid-template-columns: 1fr;
-  width: min(46vw, 540px);
-  aspect-ratio: 0.72 / 1;
+.binder-page--left {
+  border-radius: 2px 1px 1px 2px;
+  box-shadow: inset -6px 0 12px -8px rgb(27 27 29 / 0.45);
 }
 
+.binder-page--right {
+  border-radius: 1px 2px 2px 1px;
+  box-shadow: inset 6px 0 12px -8px rgb(27 27 29 / 0.45);
+}
+
+/* Stacked page edges: the sheets you haven't turned yet. */
+.binder-page::after {
+  content: '';
+  position: absolute;
+  top: 1.5%;
+  bottom: 1.5%;
+  width: 3px;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-binder-page-edge) 0 1px,
+    var(--color-binder-page) 1px 2px
+  );
+}
+
+.binder-page--left::after {
+  left: -3px;
+  border-radius: 2px 0 0 2px;
+}
+
+.binder-page--right::after {
+  right: -3px;
+  border-radius: 0 2px 2px 0;
+}
+
+/* Rings in the gutter. */
 .binder-spine {
   position: relative;
-  z-index: 4;
+  flex: none;
+  width: var(--spine-w);
   background:
     linear-gradient(
       90deg,
-      rgb(58 42 28 / 0.18),
-      rgb(255 248 230 / 0.12) 40%,
-      rgb(58 42 28 / 0.22)
+      rgb(27 27 29 / 0.5),
+      rgb(255 255 255 / 0.08) 45%,
+      rgb(27 27 29 / 0.5)
     ),
-    var(--color-paper-deep);
-  background-blend-mode: multiply, normal;
-  box-shadow:
-    inset 2px 0 4px rgb(58 42 28 / 0.18),
-    inset -2px 0 4px rgb(58 42 28 / 0.18);
+    var(--color-binder-shell);
+  z-index: 3;
 }
 
 .binder-rings {
   position: absolute;
-  inset: 12% 3px;
+  inset: 9% 22%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -74,39 +116,164 @@
 
 .binder-rings span {
   display: block;
-  height: 10px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, var(--color-paper-sun), var(--color-paper-deep));
-  box-shadow: 0 1px 2px rgb(58 42 28 / 0.35);
+  height: clamp(6px, 0.9vw, 11px);
+  border-radius: 2px;
+  background: linear-gradient(180deg, #d5d8dc, #7d838b 55%, #4a4f55);
+  box-shadow: 0 1px 1px rgb(0 0 0 / 0.45);
+}
+
+/* ---- Pockets --------------------------------------------------------- */
+
+.binder-grid {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  gap: 1.6cqw;
+  padding: 2.4cqw;
+}
+
+/* A pocket: a recessed well with a sleeve sheen and a visible opening lip on
+   the side the card actually slides in from. The lip side comes from the
+   layout's insertion map, so the physical constraint is readable on the page
+   rather than buried in an export note. */
+.binder-pocket {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  container-type: inline-size;
+  border-radius: 2px;
+  background: var(--color-pocket);
+  box-shadow:
+    inset 0 0 0 1px rgb(27 27 29 / 0.16),
+    inset 0 1px 3px rgb(27 27 29 / 0.14);
+}
+
+/* A merged pocket keeps the page grid's cell aspect instead of a single
+   card's, because it spans several cells. */
+.binder-pocket--merged {
+  aspect-ratio: auto;
+}
+
+/* Transparent-sleeve cue: one soft diagonal highlight, no glassmorphism. */
+.binder-pocket::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    148deg,
+    var(--color-sleeve-sheen) 0%,
+    rgb(255 255 255 / 0.1) 18%,
+    transparent 42%
+  );
+}
+
+/* The opening lip. */
+.binder-pocket[data-open-side]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    var(--color-pocket-lip),
+    rgb(255 255 255 / 0.55)
+  );
+  box-shadow: 0 0 0 1px rgb(27 27 29 / 0.12);
+}
+
+.binder-pocket[data-open-side='L']::before {
+  left: 0;
+}
+
+.binder-pocket[data-open-side='R']::before {
+  right: 0;
+  background: linear-gradient(270deg, var(--color-pocket-lip), rgb(255 255 255 / 0.55));
+}
+
+.binder-pocket__art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ---- Spread transition ------------------------------------------------
+   A short lateral slide that reads as a page turning. Honest and reliable;
+   it is the fallback the 3D flip degrades to, and the editor's default. */
+
+.binder-spread {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  transition:
+    opacity var(--duration-page) var(--ease-page),
+    transform var(--duration-page) var(--ease-page);
+}
+
+.binder-spread.is-exit-left {
+  opacity: 0;
+  transform: translateX(-4%);
+}
+
+.binder-spread.is-exit-right {
+  opacity: 0;
+  transform: translateX(4%);
+}
+
+.binder-spread.is-enter-right {
+  animation: binder-in-right var(--duration-page) var(--ease-page);
+}
+
+.binder-spread.is-enter-left {
+  animation: binder-in-left var(--duration-page) var(--ease-page);
+}
+
+@keyframes binder-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(4%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes binder-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-4%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ---- 3D flip ----------------------------------------------------------
+   The signature interaction, kept for the landing showcase only. The editor
+   runs 2D by default because precision editing must never wait on a flip. */
+
+.binder-stage {
+  perspective: 2400px;
+  perspective-origin: 50% 46%;
 }
 
 .binder-leaf-slot {
   position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  aspect-ratio: var(--page-aspect);
   transform-style: preserve-3d;
-  overflow: visible;
-  z-index: 2;
 }
 
 .binder-leaf-slot:has(.binder-flipper.is-animated),
 .binder-leaf-slot:has(.binder-flipper.is-dragging) {
   z-index: 8;
-}
-
-.binder-static {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  background: var(--color-paper-sun);
-}
-
-.binder-static.left {
-  border-radius: 8px 2px 2px 8px;
-  box-shadow: var(--shadow-inset-page), 4px 0 12px rgb(58 42 28 / 0.08);
-}
-
-.binder-static.right {
-  border-radius: 2px 8px 8px 2px;
-  box-shadow: var(--shadow-inset-page), -4px 0 12px rgb(58 42 28 / 0.08);
 }
 
 .binder-flipper {
@@ -119,7 +286,7 @@
 }
 
 .binder-flipper.is-animated {
-  transition: transform var(--duration-flip) var(--ease-paper-flip);
+  transition: transform var(--duration-page) var(--ease-page);
 }
 
 .binder-flipper.is-dragging {
@@ -136,29 +303,19 @@
   inset: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  transform-style: preserve-3d;
   overflow: hidden;
+  background: var(--color-binder-page);
 }
 
 .binder-face-front {
   transform: rotateY(0deg) translateZ(0.5px);
-  border-radius: 2px 8px 8px 2px;
 }
 
 .binder-face-back {
   transform: rotateY(180deg) translateZ(0.5px);
-  border-radius: 8px 2px 2px 8px;
 }
 
-.binder-flipper.is-back .binder-face-front {
-  border-radius: 8px 2px 2px 8px;
-}
-
-.binder-flipper.is-back .binder-face-back {
-  border-radius: 2px 8px 8px 2px;
-}
-
-/* 2.5D paper-bend: gutter shade + outer sheen, opacity follows the flip. */
+/* Paper bend: a gutter shade that deepens as the leaf lifts. */
 .binder-face::after {
   content: '';
   position: absolute;
@@ -166,163 +323,23 @@
   pointer-events: none;
   background: linear-gradient(
     90deg,
-    rgb(58 42 28 / 0.18) 0%,
-    rgb(58 42 28 / 0.04) 10%,
-    transparent 28%,
-    rgb(255 250 238 / 0.14) 78%,
-    rgb(255 250 238 / 0.28) 100%
+    rgb(27 27 29 / 0.16) 0%,
+    transparent 26%,
+    rgb(255 255 255 / 0.16) 100%
   );
-  opacity: 0.85;
 }
 
 .binder-face-back::after {
   background: linear-gradient(
     270deg,
-    rgb(58 42 28 / 0.18) 0%,
-    rgb(58 42 28 / 0.04) 10%,
-    transparent 28%,
-    rgb(255 250 238 / 0.14) 78%,
-    rgb(255 250 238 / 0.28) 100%
+    rgb(27 27 29 / 0.16) 0%,
+    transparent 26%,
+    rgb(255 255 255 / 0.16) 100%
   );
 }
 
-.binder-curl {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 6;
-  mix-blend-mode: multiply;
-  background: linear-gradient(
-    90deg,
-    rgb(58 42 28 / calc(0.02 + var(--flip) * 0.0022)) 0%,
-    transparent 42%,
-    rgb(58 42 28 / calc(var(--flip) * 0.0012)) 100%
-  );
-}
-
-.binder-shadow {
-  position: absolute;
-  inset: 8% -6% 8% 40%;
-  pointer-events: none;
-  z-index: 3;
-  border-radius: 40%;
-  background: rgb(58 42 28 / calc(var(--flip) * 0.0018));
-  filter: blur(18px);
-  transform: translateX(calc(var(--flip) * -0.8px)) scaleY(0.92);
-  opacity: calc(var(--flip) / 180);
-}
-
-.binder-page {
-  height: 100%;
-  padding: 1.1rem 1.2rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-}
-
-.binder-page.wash-sun {
-  background-color: var(--color-paper-sun);
-}
-.binder-page.wash-paper {
-  background-color: var(--color-paper);
-}
-.binder-page.wash-shade {
-  background-color: var(--color-paper-shade);
-}
-.binder-page.wash-deep {
-  background-color: var(--color-paper-deep);
-}
-.binder-page.wash-cover {
-  background:
-    linear-gradient(180deg, rgb(196 92 62 / 0.12), transparent 42%),
-    var(--color-paper-deep);
-  background-image: var(--texture-linen),
-    linear-gradient(180deg, rgb(196 92 62 / 0.12), transparent 42%);
-}
-
-.binder-page-kicker {
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-accent);
-}
-
-.binder-page-title {
-  font-family: var(--font-display);
-  font-size: 1.65rem;
-  color: var(--color-ink);
-  line-height: 1.15;
-}
-
-.binder-page-note {
-  color: var(--color-ink-soft);
-  font-size: 0.92rem;
-  line-height: 1.45;
-}
-
-.binder-grid {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 0.4rem;
-  min-height: 0;
-}
-
-.binder-slot {
-  border-radius: 0.28rem;
-  background: rgb(255 250 238 / 0.55);
-  box-shadow:
-    inset 0 0 0 1px rgb(58 42 28 / 0.08),
-    var(--shadow-stamp);
-}
-
-.binder-slot-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 0.28rem;
-}
-
-.binder-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--color-ink-soft);
-  font-size: 0.9rem;
-}
-
-.binder-controls button {
-  font-family: var(--font-display);
-  background: var(--color-paper-sun);
-  color: var(--color-ink);
-  border: 1px solid var(--color-rule);
-  border-radius: var(--radius-md);
-  padding: 0.4rem 0.9rem;
-  box-shadow: var(--shadow-stamp);
-  cursor: pointer;
-  transition:
-    background var(--duration-soft) var(--ease-paper),
-    transform var(--duration-quick) var(--ease-paper);
-}
-
-.binder-controls button:hover {
-  background: var(--color-accent-soft);
-}
-
-.binder-controls button:active {
-  transform: translateY(1px);
-}
-
-.binder-controls button:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-
-.binder-hit-right,
-.binder-hit-left {
+.binder-hit-left,
+.binder-hit-right {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -334,120 +351,17 @@
   border: 0;
 }
 
-.binder-hit-right {
-  right: 0;
-}
-
 .binder-hit-left {
   left: 0;
 }
 
-.binder-mode-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem 0.9rem;
-  padding: 0.75rem 1rem 0;
-  color: var(--color-ink-soft);
-  font-size: 0.85rem;
+.binder-hit-right {
+  right: 0;
 }
 
-.binder-mode-bar button {
-  font-family: var(--font-display);
-  background: var(--color-paper-sun);
-  color: var(--color-ink);
-  border: 1px solid var(--color-rule);
-  border-radius: var(--radius-md);
-  padding: 0.25rem 0.75rem;
-  box-shadow: var(--shadow-stamp);
-  cursor: pointer;
-}
-
-.binder-mode-bar button[aria-pressed='true'] {
-  background: var(--color-accent-soft);
-  color: var(--color-accent-ink);
-}
-
-.binder-mode-reason {
-  color: var(--color-ink-faint);
-}
-
-.binder-2d {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 18px 1fr;
-  width: min(92vw, 1080px);
-  aspect-ratio: 2.05 / 1;
-  touch-action: none;
-  filter: drop-shadow(0 18px 28px rgb(58 42 28 / 0.28));
-}
-
-.binder-2d .binder-spine {
-  grid-column: 2;
-  z-index: 3;
-}
-
-.binder-2d-spread {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: 1fr 18px 1fr;
-  transition:
-    opacity var(--duration-flip) var(--ease-paper),
-    transform var(--duration-flip) var(--ease-paper);
-}
-
-.binder-2d-spread .binder-static {
-  position: relative;
-  inset: auto;
-  height: 100%;
-}
-
-.binder-2d-spread .binder-static.left {
-  grid-column: 1;
-}
-
-.binder-2d-spread .binder-static.right {
-  grid-column: 3;
-}
-
-.binder-2d-spread.is-exit-left {
-  opacity: 0;
-  transform: translateX(-7%);
-}
-
-.binder-2d-spread.is-exit-right {
-  opacity: 0;
-  transform: translateX(7%);
-}
-
-.binder-2d-spread.is-enter-right {
-  animation: binder-2d-in-right var(--duration-flip) var(--ease-paper-out);
-}
-
-.binder-2d-spread.is-enter-left {
-  animation: binder-2d-in-left var(--duration-flip) var(--ease-paper-out);
-}
-
-@keyframes binder-2d-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(7%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+@media (prefers-reduced-motion: reduce) {
+  .binder-flipper.is-animated {
+    transition: none;
   }
 }
-
-@keyframes binder-2d-in-left {
-  from {
-    opacity: 0;
-    transform: translateX(-7%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
 }

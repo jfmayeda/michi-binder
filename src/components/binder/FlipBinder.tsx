@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import './binder.css';
 import { SPREAD_COUNT, spreadCountFor, spreadPages, type DummyPage } from './dummyPages';
 
 function CoverPage({ title, kicker }: { title: string; kicker: string }) {

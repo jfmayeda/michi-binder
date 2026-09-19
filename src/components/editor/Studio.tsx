@@ -32,7 +32,6 @@ import {
 } from '@/domain/slots';
 import { LAYOUTS } from '@/domain/layouts';
 import type { CardHit } from '@/search';
-import '@/components/binder/binder.css';
 import { SlotGrid } from '@/components/editor/SlotGrid';
 import { CropEditor } from '@/components/editor/CropEditor';
 import { ExportDialog } from '@/components/editor/ExportDialog';

@@ -1,29 +1,17 @@
 import type { Metadata } from 'next';
-import { Fraunces, Nunito } from 'next/font/google';
+import type { ReactNode } from 'react';
 import './globals.css';
-
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  variable: '--font-fraunces',
-  display: 'swap',
-  axes: ['SOFT', 'WONK', 'opsz'],
-});
-
-const nunito = Nunito({
-  subsets: ['latin'],
-  variable: '--font-nunito',
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   title: 'Michi Binder Studio',
-  description: 'A cozy studio for designing aesthetic Pokémon binder spreads.',
+  description:
+    'Design facing-page binder spreads, merge pockets, and print art that fits the real thing.',
 };
 
-export default function RootLayout({ children }: LayoutProps<'/'>) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${nunito.variable}`}>
-      <body className="font-body antialiased">{children}</body>
+    <html lang="en">
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

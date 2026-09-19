@@ -1,112 +1,671 @@
-/* Michi Binder Studio — cozy design tokens (T1.2)
-   Warm scrapbook paper, one clay accent, paper-like motion.
-   Palette swaps happen by changing these names — never raw Tailwind colors. */
+/* Michi Binder Studio — design tokens.
+ *
+ * Derived from the Pokémon Card GB album interface: framed panels with title
+ * strips, a caret that marks the active row, an index/album metaphor, and a
+ * prompt strip that always says what the app wants next.
+ *
+ * Translated, not copied. Body text is a normal readable face. The retro
+ * register lives only in micro-labels, counters, markers and hard-edged
+ * geometry. No pixel font, no emulator chrome, no gradients-as-decoration.
+ *
+ * Change a value here, not in a component. Components never use raw colours.
+ */
 
 @theme {
-  /* Color — paper, ink, one accent */
-  --color-paper: #f6ebd9;
-  --color-paper-sun: #fbf4e8;
-  --color-paper-shade: #e8d4b8;
-  --color-paper-deep: #d4bc96;
-  --color-ink: #3a2a1c;
-  --color-ink-soft: #6b5344;
-  --color-ink-faint: #a08a76;
-  --color-rule: #d4c0a1;
-  --color-accent: #c45c3e;
-  --color-accent-hover: #a84c32;
-  --color-accent-soft: #f0d2c8;
-  --color-accent-ink: #7a3220;
+  /* ---- Surfaces -------------------------------------------------------
+   * Warm white ground, pale gray recesses. The cards supply the colour. */
+  --color-paper: #f4f2ec;
+  --color-paper-raised: #fbfaf7;
+  --color-paper-sunk: #e7e4db;
+  --color-paper-deep: #d8d4c8;
 
-  /* Typography — next/font variables applied on <html> */
-  --font-display: var(--font-fraunces), 'Fraunces', ui-serif, Georgia, serif;
-  --font-sans: var(--font-nunito), 'Nunito', ui-sans-serif, system-ui, sans-serif;
-  --font-body: var(--font-nunito), 'Nunito', ui-sans-serif, system-ui, sans-serif;
+  /* ---- Ink ------------------------------------------------------------
+   * Purposeful near-black outlines. --color-ink is the outline colour. */
+  --color-ink: #1b1b1d;
+  --color-ink-soft: #4a4a4f;
+  --color-ink-faint: #7b7a80;
+  --color-rule: #c4c1b7;
+  --color-rule-soft: #ddd9cf;
 
-  /* Spacing — slightly generous, scrapbook margins */
-  --spacing-page: 2.5rem;
-  --spacing-spread: 1.75rem;
-  --spacing-slot: 0.35rem;
+  /* ---- Accents --------------------------------------------------------
+   * Muted red is the primary action and the selection caret. Teal marks
+   * confirmed/owned state. Blue marks informational and merged state. */
+  --color-red: #ad3b39;
+  --color-red-hover: #93302e;
+  --color-red-wash: #f7e6e4;
+  --color-red-ink: #7a2725;
 
-  /* Radius — worn paper corners, never crisp pills */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.875rem;
-  --radius-xl: 1.25rem;
-  --radius-page: 0.125rem 0.5rem 0.5rem 0.125rem;
+  --color-teal: #2c7466;
+  --color-teal-hover: #235e53;
+  --color-teal-wash: #e0efeb;
+  --color-teal-ink: #1d4f45;
 
-  /* Shadows — warm ink, layered, never cool gray */
-  --shadow-soft: 0 2px 8px rgb(58 42 28 / 0.08), 0 1px 2px rgb(58 42 28 / 0.06);
-  --shadow-page: 0 10px 28px rgb(58 42 28 / 0.14), 0 2px 8px rgb(58 42 28 / 0.08);
-  --shadow-lift: 0 16px 40px rgb(58 42 28 / 0.18), 0 4px 12px rgb(58 42 28 / 0.1);
-  --shadow-stamp: 0 1px 0 rgb(58 42 28 / 0.16), 0 2px 4px rgb(58 42 28 / 0.08);
-  --shadow-inset-page: inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -2px 6px rgb(58 42 28 / 0.06);
+  --color-blue: #2f5d96;
+  --color-blue-hover: #264976;
+  --color-blue-wash: #e2eaf4;
+  --color-blue-ink: #1f4068;
 
-  /* Motion — paper, not corporate snaps */
-  --ease-paper: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --ease-paper-flip: cubic-bezier(0.45, 0.02, 0.28, 1);
-  --ease-paper-in: cubic-bezier(0.32, 0.72, 0, 1);
-  --ease-paper-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --color-amber-wash: #f8efd9;
+  --color-amber-ink: #7a5714;
+
+  /* ---- Binder materials ----------------------------------------------
+   * The physical object. Deeper and cooler than the interface ground so the
+   * binder reads as a thing sitting on the app, not as more interface. */
+  --color-binder-shell: #2f3338;
+  --color-binder-shell-lit: #464b52;
+  --color-binder-edge: #1c1f22;
+  --color-binder-page: #fbfaf6;
+  --color-binder-page-edge: #ddd8cb;
+  --color-pocket: #eeebe3;
+  --color-pocket-lip: #cfcabc;
+  --color-sleeve-sheen: rgb(255 255 255 / 0.42);
+
+  /* ---- Type -----------------------------------------------------------
+   * Platform stacks only. The build must not depend on a font fetch.
+   * --font-mono carries the retro register: counters, indices, markers. */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+  --font-mono:
+    ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1rem;
+  --text-mini: 0.75rem;
+  --text-mini--line-height: 1.125rem;
+
+  /* ---- Geometry -------------------------------------------------------
+   * Square or barely-softened. Nothing is a pill. */
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+
+  --spacing-gutter: 0.875rem;
+  --spacing-panel: 1rem;
+
+  /* ---- Depth ----------------------------------------------------------
+   * Hard offset steps, not blurred drop shadows. The only blurred shadow in
+   * the system belongs to the binder, which is a physical object. */
+  --shadow-step: 2px 2px 0 0 var(--color-ink);
+  --shadow-step-sm: 1px 1px 0 0 var(--color-ink);
+  --shadow-inset-well: inset 0 1px 2px rgb(27 27 29 / 0.14);
+  --shadow-binder: 0 18px 38px rgb(27 27 29 / 0.28), 0 3px 10px rgb(27 27 29 / 0.16);
+  --shadow-sheet: 0 1px 0 rgb(27 27 29 / 0.1), 0 6px 16px rgb(27 27 29 / 0.1);
+  --shadow-overlay: 0 24px 60px rgb(27 27 29 / 0.34);
+
+  /* ---- Motion ---------------------------------------------------------
+   * Short and functional. Motion confirms an action; it never performs. */
+  --ease-step: cubic-bezier(0.2, 0, 0, 1);
+  --ease-page: cubic-bezier(0.45, 0.05, 0.25, 1);
+  --duration-tap: 90ms;
   --duration-quick: 160ms;
-  --duration-soft: 280ms;
-  --duration-flip: 700ms;
-  --duration-linger: 900ms;
-
-  /* Textures (SVG assets) */
-  --texture-paper: url('/textures/paper-grain.svg');
-  --texture-linen: url('/textures/linen.svg');
+  --duration-page: 420ms;
 }
 
 @layer base {
   html {
     background-color: var(--color-paper);
     color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
-    font-family: var(--font-body);
+    font-family: var(--font-sans);
     background-color: var(--color-paper);
-    background-image: var(--texture-paper);
-    background-repeat: repeat;
     color: var(--color-ink);
     min-height: 100dvh;
+    font-size: 0.9375rem;
+    line-height: 1.5;
   }
 
   h1,
   h2,
-  h3 {
-    font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: -0.02em;
+  h3,
+  h4 {
+    font-weight: 650;
+    letter-spacing: -0.014em;
+    text-wrap: balance;
+  }
+
+  /* One focus treatment everywhere: a thick ring that survives any ground. */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
   }
 
   ::selection {
-    background: var(--color-accent-soft);
-    color: var(--color-accent-ink);
+    background: var(--color-red-wash);
+    color: var(--color-red-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
-@layer utilities {
-  .font-display {
-    font-family: var(--font-display);
+@layer components {
+  /* ===================================================================
+   * Panel — the album frame. A near-black outline, a title strip, a body.
+   * Everything in the app that groups content is one of these.
+   * =================================================================== */
+  .gb-panel {
+    border: 1px solid var(--color-ink);
+    border-radius: var(--radius-md);
+    background: var(--color-paper-raised);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
 
-  .font-body {
-    font-family: var(--font-body);
+  .gb-panel--sunk {
+    background: var(--color-paper-sunk);
   }
 
-  .texture-paper {
-    background-image: var(--texture-paper);
+  .gb-panel--stepped {
+    box-shadow: var(--shadow-step);
   }
 
-  .texture-linen {
-    background-image: var(--texture-linen);
+  /* Title strip. Reads as a label on a physical divider, not as a heading. */
+  .gb-strip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3125rem 0.5rem;
+    border-bottom: 1px solid var(--color-ink);
+    background: var(--color-paper-sunk);
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+    flex: none;
   }
 
-  .ease-paper {
-    transition-timing-function: var(--ease-paper);
+  /* Inverted strip for the panel that currently owns the user's attention. */
+  .gb-strip--active {
+    background: var(--color-ink);
+    color: var(--color-paper-raised);
   }
 
-  .ease-paper-flip {
-    transition-timing-function: var(--ease-paper-flip);
+  .gb-strip__count {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+    color: inherit;
+    opacity: 0.85;
+  }
+
+  .gb-panel__body {
+    padding: var(--spacing-panel);
+    min-height: 0;
+    flex: 1;
+  }
+
+  .gb-panel__body--flush {
+    padding: 0;
+  }
+
+  /* ===================================================================
+   * Caret row — the album cursor. Selection is a marker in a fixed gutter
+   * plus a ground change, never colour alone.
+   * =================================================================== */
+  .gb-row {
+    display: grid;
+    grid-template-columns: 0.875rem 1fr;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.4375rem 0.5rem;
+    border: 0;
+    border-radius: var(--radius-xs);
+    background: transparent;
+    color: var(--color-ink);
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+    transition: background var(--duration-tap) var(--ease-step);
+  }
+
+  .gb-row::before {
+    content: '';
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0.25rem 0 0.25rem 0.375rem;
+    border-color: transparent transparent transparent var(--color-red);
+    opacity: 0;
+    transition: opacity var(--duration-tap) var(--ease-step);
+  }
+
+  .gb-row:hover {
+    background: var(--color-paper-sunk);
+  }
+
+  .gb-row[aria-selected='true'],
+  .gb-row[aria-current='true'],
+  .gb-row[aria-pressed='true'] {
+    background: var(--color-red-wash);
+    font-weight: 600;
+  }
+
+  .gb-row[aria-selected='true']::before,
+  .gb-row[aria-current='true']::before,
+  .gb-row[aria-pressed='true']::before {
+    opacity: 1;
+  }
+
+  .gb-row:disabled,
+  .gb-row[aria-disabled='true'] {
+    color: var(--color-ink-faint);
+    cursor: not-allowed;
+  }
+
+  .gb-row:disabled:hover,
+  .gb-row[aria-disabled='true']:hover {
+    background: transparent;
+  }
+
+  /* Index label: "A01", "P3", "2/9". Monospace so columns line up. */
+  .gb-index {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-ink-faint);
+  }
+
+  /* ===================================================================
+   * Micro label — the one place the retro register is allowed in text.
+   * =================================================================== */
+  .gb-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+  }
+
+  .gb-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  /* ===================================================================
+   * Buttons. Square, outlined, with a hard step that presses in on click.
+   * =================================================================== */
+  .gb-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    min-height: 2.25rem;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--color-ink);
+    border-radius: var(--radius-md);
+    background: var(--color-paper-raised);
+    color: var(--color-ink);
+    font: inherit;
+    font-weight: 550;
+    font-size: 0.875rem;
+    line-height: 1.2;
+    cursor: pointer;
+    box-shadow: var(--shadow-step-sm);
+    transition:
+      background var(--duration-tap) var(--ease-step),
+      box-shadow var(--duration-tap) var(--ease-step),
+      transform var(--duration-tap) var(--ease-step);
+  }
+
+  .gb-btn:hover:not(:disabled) {
+    background: var(--color-paper-sunk);
+  }
+
+  .gb-btn:active:not(:disabled) {
+    box-shadow: 0 0 0 0 var(--color-ink);
+    transform: translate(1px, 1px);
+  }
+
+  .gb-btn:disabled {
+    color: var(--color-ink-faint);
+    background: var(--color-paper-sunk);
+    border-color: var(--color-rule);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  .gb-btn--primary {
+    background: var(--color-red);
+    color: #fff;
+  }
+
+  .gb-btn--primary:hover:not(:disabled) {
+    background: var(--color-red-hover);
+  }
+
+  .gb-btn--confirm {
+    background: var(--color-teal);
+    color: #fff;
+  }
+
+  .gb-btn--confirm:hover:not(:disabled) {
+    background: var(--color-teal-hover);
+  }
+
+  .gb-btn--quiet {
+    border-color: transparent;
+    box-shadow: none;
+    background: transparent;
+    color: var(--color-ink-soft);
+  }
+
+  .gb-btn--quiet:hover:not(:disabled) {
+    background: var(--color-paper-sunk);
+    color: var(--color-ink);
+  }
+
+  .gb-btn--lg {
+    min-height: 2.75rem;
+    padding: 0.625rem 1.125rem;
+    font-size: 0.9375rem;
+    box-shadow: var(--shadow-step);
+  }
+
+  /* Small square icon button. Still 32px, still has an accessible name. */
+  .gb-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid var(--color-ink);
+    border-radius: var(--radius-sm);
+    background: var(--color-paper-raised);
+    color: var(--color-ink);
+    cursor: pointer;
+    transition: background var(--duration-tap) var(--ease-step);
+  }
+
+  .gb-icon-btn:hover:not(:disabled) {
+    background: var(--color-paper-sunk);
+  }
+
+  .gb-icon-btn:disabled {
+    color: var(--color-ink-faint);
+    border-color: var(--color-rule);
+    cursor: not-allowed;
+  }
+
+  /* ===================================================================
+   * Inputs. Recessed wells inside the outlined frame.
+   * =================================================================== */
+  .gb-input,
+  .gb-select {
+    width: 100%;
+    min-height: 2.25rem;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid var(--color-ink);
+    border-radius: var(--radius-sm);
+    background: var(--color-paper-raised);
+    color: var(--color-ink);
+    font: inherit;
+    font-size: 0.875rem;
+    box-shadow: var(--shadow-inset-well);
+  }
+
+  .gb-input::placeholder {
+    color: var(--color-ink-faint);
+  }
+
+  .gb-select {
+    appearance: none;
+    padding-right: 1.75rem;
+    background-image: linear-gradient(45deg, transparent 50%, var(--color-ink) 50%),
+      linear-gradient(135deg, var(--color-ink) 50%, transparent 50%);
+    background-position:
+      right 0.8rem top 55%,
+      right 0.55rem top 55%;
+    background-size:
+      0.25rem 0.25rem,
+      0.25rem 0.25rem;
+    background-repeat: no-repeat;
+  }
+
+  /* ===================================================================
+   * Tabs. A restrained ruled row, not a pill group.
+   * =================================================================== */
+  .gb-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--color-ink);
+    background: var(--color-paper-sunk);
+    flex: none;
+  }
+
+  .gb-tab {
+    position: relative;
+    padding: 0.5rem 0.75rem;
+    border: 0;
+    border-right: 1px solid var(--color-rule);
+    background: transparent;
+    color: var(--color-ink-soft);
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    cursor: pointer;
+    min-height: 2.25rem;
+  }
+
+  .gb-tab:hover {
+    color: var(--color-ink);
+  }
+
+  .gb-tab[aria-selected='true'] {
+    background: var(--color-paper-raised);
+    color: var(--color-ink);
+    font-weight: 700;
+  }
+
+  /* Underline marks the active tab in shape as well as colour. */
+  .gb-tab[aria-selected='true']::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 -1px 0;
+    height: 2px;
+    background: var(--color-red);
+  }
+
+  /* ===================================================================
+   * Chip — a filter toggle. Square, outlined, marked with a tick when on.
+   * =================================================================== */
+  .gb-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-height: 1.875rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-sm);
+    background: var(--color-paper-raised);
+    color: var(--color-ink-soft);
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .gb-chip:hover {
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .gb-chip[aria-pressed='true'] {
+    border-color: var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-paper-raised);
+  }
+
+  .gb-chip[aria-pressed='true']::before {
+    content: '✓';
+    font-size: 0.6875rem;
+  }
+
+  /* ===================================================================
+   * Status marker — small retro badge. Shape + text, never colour alone.
+   * =================================================================== */
+  .gb-marker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.1875rem;
+    padding: 0.0625rem 0.25rem;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-xs);
+    background: var(--color-paper-raised);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    line-height: 1.25;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .gb-marker--owned {
+    color: var(--color-teal-ink);
+    background: var(--color-teal-wash);
+  }
+
+  .gb-marker--wanted {
+    color: var(--color-red-ink);
+    background: var(--color-red-wash);
+  }
+
+  .gb-marker--merge {
+    color: var(--color-blue-ink);
+    background: var(--color-blue-wash);
+  }
+
+  .gb-marker--note {
+    color: var(--color-amber-ink);
+    background: var(--color-amber-wash);
+  }
+
+  /* ===================================================================
+   * Prompt strip — the Card GB device this app leans on hardest.
+   * A framed bar that always states what the app wants next. It is the
+   * editor's single source of "what do I do now".
+   * =================================================================== */
+  .gb-prompt {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-ink);
+    border-radius: var(--radius-md);
+    background: var(--color-paper-raised);
+    box-shadow: var(--shadow-step-sm);
+    font-size: 0.875rem;
+    color: var(--color-ink);
+    min-height: 2.75rem;
+  }
+
+  .gb-prompt--asking {
+    background: var(--color-amber-wash);
+    border-color: var(--color-ink);
+  }
+
+  .gb-prompt--problem {
+    background: var(--color-red-wash);
+  }
+
+  .gb-prompt__marker {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.125rem 0.3125rem;
+    border: 1px solid var(--color-ink);
+    border-radius: var(--radius-xs);
+    background: var(--color-ink);
+    color: var(--color-paper-raised);
+  }
+
+  /* ===================================================================
+   * Stat rows — the "ALBUM 51/226 · PLAY TIME 0:14" block.
+   * =================================================================== */
+  .gb-stats {
+    display: grid;
+    gap: 0.125rem;
+  }
+
+  .gb-stat {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-mini);
+  }
+
+  .gb-stat__key {
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .gb-stat__dots {
+    flex: 1;
+    border-bottom: 1px dotted var(--color-rule);
+    transform: translateY(-0.2em);
+  }
+
+  .gb-stat__val {
+    font-variant-numeric: tabular-nums;
+    color: var(--color-ink);
+  }
+
+  /* Screen-reader-only, for icon-only affordances that still need a name. */
+  .gb-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+@layer components {
+  /* Card stand-in. Sized against its own box so it reads the same in a search
+     result, a single pocket and a merged pocket. */
+  .gb-cardfallback {
+    container-type: inline-size;
+  }
+
+  .gb-cardfallback__name {
+    font-size: clamp(0.5rem, 13cqw, 0.8125rem);
+    line-height: 1.15;
+    font-weight: 600;
+  }
+
+  .gb-cardfallback__meta {
+    font-size: clamp(0.4rem, 9cqw, 0.625rem);
+    line-height: 1.2;
   }
 }
